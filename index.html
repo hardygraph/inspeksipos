@@ -1235,7 +1235,7 @@ async function uploadViaAppsScript(fileName, mimeType, base64Data) {
 
   console.log('Upload foto:', fileName, '| folderId:', CONFIG.driveId || '(root)', '| size:', Math.round(base64Data.length/1024)+'KB');
 
-  var CHUNK = 20000; // ~20KB per chunk setelah kompresi
+  var CHUNK = 3000; // 3KB per chunk → URL ~4500 chars, aman di semua browser
   var totalChunks = Math.ceil(base64Data.length / CHUNK);
   var fileId = 'f_' + Date.now() + '_' + Math.random().toString(36).substr(2,6);
 
@@ -1253,7 +1253,10 @@ async function uploadViaAppsScript(fileName, mimeType, base64Data) {
       folderId: CONFIG.driveId || ''
     });
     var encoded = btoa(unescape(encodeURIComponent(payload)));
+    console.log('Chunk ' + (i+1) + '/' + totalChunks + ' URL length:', (CONFIG.appsScriptUrl.length + encoded.length * 3 + 50));
     await jsonpCall(encoded);
+    // Delay 200ms antar chunk
+    await new Promise(function(r){ setTimeout(r, 200); });
   }
 
   // Finalize — assemble chunks into Drive file
