@@ -1274,6 +1274,9 @@ function jsonpCall(encoded) {
   return new Promise(function(resolve, reject) {
     var cbName = '_cb' + Date.now() + Math.random().toString(36).substr(2,4);
     var script = document.createElement('script');
+    var sep = CONFIG.appsScriptUrl.indexOf('?') >= 0 ? '&' : '?';
+    var src = CONFIG.appsScriptUrl + sep + 'data=' + encodeURIComponent(encoded) + '&callback=' + cbName;
+    console.log('JSONP chunk URL length:', src.length);
     var timer = setTimeout(function() {
       delete window[cbName];
       if (script.parentNode) script.parentNode.removeChild(script);
@@ -1285,12 +1288,11 @@ function jsonpCall(encoded) {
       clearTimeout(timer);
       resolve(result);
     };
-    var sep = CONFIG.appsScriptUrl.indexOf('?') >= 0 ? '&' : '?';
-    script.src = CONFIG.appsScriptUrl + sep + 'data=' + encodeURIComponent(encoded) + '&callback=' + cbName;
+    script.src = src;
     script.onerror = function() {
       delete window[cbName]; clearTimeout(timer);
       if (script.parentNode) script.parentNode.removeChild(script);
-      reject(new Error('Script error'));
+      reject(new Error('Script error — URL length: ' + src.length));
     };
     document.head.appendChild(script);
   });
