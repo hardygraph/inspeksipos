@@ -173,7 +173,7 @@ body{font-family:'Inter',sans-serif;background:var(--gray-1);color:var(--blue-de
 
     <div class="field" style="margin-top:0">
       <div class="field-label" style="font-size:11px">Apps Script URL</div>
-      <input id="pwAppsUrl" type="url" placeholder="https://script.google.com/macros/s/..."
+      <input id="pwAppsUrl" type="text" placeholder="https://script.google.com/macros/s/..."
         class="field-input" style="font-size:11px;font-family:monospace"
         onkeydown="if(event.key==='Enter')document.getElementById('pwInput').focus()">
     </div>
@@ -938,8 +938,15 @@ function closePasswordModal() {
 async function submitPassword() {
   var pw = document.getElementById('pwInput').value.trim();
   var appsUrl = document.getElementById('pwAppsUrl').value.trim();
+  // Bersihkan karakter tersembunyi
+  appsUrl = appsUrl.replace(/[\u200B-\u200D\uFEFF\u00A0]/g, '').trim();
+
   if (!pw) { document.getElementById('pwError').textContent = '❌ Masukkan password'; return; }
   if (!appsUrl) { document.getElementById('pwError').textContent = '❌ Masukkan Apps Script URL'; return; }
+  if (appsUrl.indexOf('script.google.com') < 0) {
+    document.getElementById('pwError').textContent = '❌ URL tidak valid — harus dari script.google.com';
+    return;
+  }
 
   var btn = document.getElementById('pwSubmitBtn');
   btn.textContent = '⏳ Memverifikasi...';
