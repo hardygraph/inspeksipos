@@ -1,0 +1,2640 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>QC & Inspeksi Pos Hidrologi — BWS Kalimantan IV</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+:root {
+  --blue-deep:#0A2540;--blue-mid:#1A4F8A;--blue-light:#2E7FD4;
+  --teal:#0AADCC;--teal-soft:#E6F7FA;--white:#FFFFFF;
+  --gray-1:#F4F6F9;--gray-2:#E8ECF1;--gray-3:#B0BBCC;--gray-4:#6B7A90;--gray-5:#3A4559;
+  --green:#1DB87A;--green-soft:#E6F8F1;--yellow:#F5A623;--yellow-soft:#FEF3E0;
+  --red:#E53935;--red-soft:#FDECEA;
+  --radius:12px;--radius-sm:8px;
+  --shadow:0 2px 12px rgba(10,37,64,0.10);--shadow-lg:0 8px 32px rgba(10,37,64,0.16);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Inter',sans-serif;background:var(--gray-1);color:var(--blue-deep);min-height:100vh;font-size:14px}
+
+/* HEADER */
+.app-header{background:var(--blue-deep);color:var(--white);position:sticky;top:0;z-index:100;box-shadow:var(--shadow-lg)}
+.header-top{display:flex;align-items:center;gap:12px;padding:12px 16px 8px}
+.header-logo{width:34px;height:34px;background:var(--teal);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.header-title h1{font-size:14px;font-weight:700;letter-spacing:-0.3px}
+.header-title p{font-size:11px;color:var(--gray-3);margin-top:1px}
+.mode-row{display:flex;border-bottom:1px solid rgba(255,255,255,0.08)}
+.mode-btn{flex:1;padding:8px 4px;font-size:11px;font-weight:700;border:none;cursor:pointer;transition:all 0.2s;color:var(--gray-3);background:rgba(255,255,255,0.08)}
+.mode-btn.active{background:var(--teal);color:var(--blue-deep)}
+.progress-bar-wrap{background:rgba(255,255,255,0.08);height:3px}
+.progress-bar-fill{height:3px;background:var(--teal);transition:width 0.4s ease;width:0%}
+.step-nav{display:flex;overflow-x:auto;scrollbar-width:none;border-top:1px solid rgba(255,255,255,0.08)}
+.step-nav::-webkit-scrollbar{display:none}
+.step-btn{flex:0 0 auto;padding:8px 14px;font-size:11px;font-weight:500;color:var(--gray-3);border:none;background:none;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all 0.2s}
+.step-btn.active{color:var(--teal);border-bottom-color:var(--teal)}
+
+/* SETUP */
+.setup-panel{background:var(--blue-mid);padding:0;overflow:hidden;max-height:0;transition:max-height 0.3s,padding 0.3s}
+.setup-panel.open{padding:14px 16px;max-height:200px}
+.setup-title{font-size:11px;font-weight:600;color:var(--gray-3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+.setup-row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.setup-input{flex:1;padding:9px 12px;border-radius:var(--radius-sm);border:1.5px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:var(--white);font-size:12px;font-family:'JetBrains Mono',monospace;outline:none}
+.setup-input:focus{border-color:var(--teal)}
+.btn-setup{padding:9px 14px;background:var(--teal);color:var(--blue-deep);border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:700;cursor:pointer}
+.setup-toggle{background:rgba(255,255,255,0.1);border:none;color:var(--gray-3);padding:6px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px}
+.status-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.status-chip.ok{background:var(--green-soft);color:var(--green)}
+.status-chip.warn{background:var(--yellow-soft);color:var(--yellow)}
+.status-chip.err{background:var(--red-soft);color:var(--red)}
+.dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+
+/* MAIN */
+.main{padding:16px;padding-bottom:100px;max-width:480px;margin:0 auto}
+.section-card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:14px;overflow:hidden}
+.section-header{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--gray-2);cursor:pointer;user-select:none;-webkit-user-select:none}
+.section-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.section-icon.blue{background:#EBF3FC}.section-icon.teal{background:var(--teal-soft)}
+.section-icon.green{background:var(--green-soft)}.section-icon.yellow{background:var(--yellow-soft)}
+.section-icon.purple{background:#F0EEFF}
+.section-label{font-size:13px;font-weight:700;flex:1}
+.section-sublabel{font-size:11px;color:var(--gray-4);margin-top:1px}
+.section-chevron{color:var(--gray-3);font-size:16px;transition:transform 0.25s;flex-shrink:0}
+.section-chevron.open{transform:rotate(180deg)}
+.section-score-badge{padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;background:var(--gray-2);color:var(--gray-4);flex-shrink:0}
+.section-score-badge.filled{background:var(--teal-soft);color:var(--blue-mid)}
+.section-body{padding:0 16px 16px;display:none}
+.section-body.open{display:block}
+
+/* FIELDS */
+.field{margin-top:14px}
+.field-label{font-size:12px;font-weight:600;color:var(--gray-5);margin-bottom:6px;display:flex;align-items:flex-start;gap:4px}
+.req{color:var(--red);font-size:11px}
+.field-sub{font-size:11px;color:var(--gray-4);margin-bottom:6px}
+.field-select,.field-textarea,.field-input{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:1.5px solid var(--gray-2);background:var(--gray-1);font-family:'Inter',sans-serif;font-size:13px;color:var(--blue-deep);outline:none;transition:border-color 0.2s;-webkit-appearance:none}
+.field-select:focus,.field-textarea:focus,.field-input:focus{border-color:var(--blue-light);background:var(--white)}
+.field-textarea{resize:none;min-height:72px;line-height:1.5}
+.kondisi-group{display:flex;gap:6px;flex-wrap:wrap}
+.kondisi-btn{flex:1;min-width:80px;padding:9px 6px;border-radius:var(--radius-sm);border:1.5px solid var(--gray-2);background:var(--gray-1);font-size:12px;font-weight:600;cursor:pointer;text-align:center;transition:all 0.15s;color:var(--gray-4)}
+.kondisi-btn.selected-baik{border-color:var(--green);background:var(--green-soft);color:var(--green)}
+.kondisi-btn.selected-sedang{border-color:var(--yellow);background:var(--yellow-soft);color:var(--yellow)}
+.kondisi-btn.selected-rusak{border-color:var(--red);background:var(--red-soft);color:var(--red)}
+.gps-row{display:flex;gap:8px;align-items:flex-end}
+.btn-gps{padding:10px 12px;background:var(--blue-mid);color:var(--white);border:none;border-radius:var(--radius-sm);font-size:20px;cursor:pointer;flex-shrink:0}
+.field-divider{border:none;border-top:1px solid var(--gray-2);margin:16px 0 0}
+
+/* QC ITEMS */
+.qc-radio-label{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;border:1.5px solid var(--gray-2);margin-bottom:6px;background:var(--gray-1);transition:all 0.15s}
+.qc-radio-label.selected{border-color:var(--blue-mid);background:var(--teal-soft)}
+.qc-photo-slot{width:100px;height:100px;border:2px dashed var(--gray-2);border-radius:9px;background:var(--gray-1);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:border-color 0.2s;flex-shrink:0}
+.qc-photo-slot.filled{border-color:var(--teal);border-style:solid}
+
+/* ID PHOTO SLOTS */
+.id-photo-slot{width:100%;aspect-ratio:4/3;border:2px dashed var(--gray-2);border-radius:10px;background:var(--gray-1);cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:all 0.2s}
+.id-photo-slot:hover{border-color:var(--teal);background:var(--teal-soft)}
+.id-slot-empty{text-align:center;pointer-events:none}
+.id-slot-filled{position:absolute;inset:0}
+
+/* BOTTOM BAR */
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--gray-2);padding:12px 16px;display:flex;gap:10px;z-index:100;box-shadow:0 -4px 16px rgba(10,37,64,0.08)}
+.btn-save{flex:1;padding:14px;background:var(--blue-deep);color:var(--white);border:none;border-radius:var(--radius);font-size:14px;font-weight:700;cursor:pointer;transition:opacity 0.2s}
+.btn-save:hover{opacity:0.88}
+.btn-draft{padding:14px 18px;background:var(--gray-1);color:var(--gray-5);border:1.5px solid var(--gray-2);border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer}
+
+/* TOAST */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--blue-deep);color:var(--white);padding:12px 20px;border-radius:24px;font-size:13px;font-weight:600;z-index:999;white-space:nowrap;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:opacity 0.3s,transform 0.3s;transform:translateX(-50%) translateY(10px)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.success{background:var(--green)}.toast.error{background:var(--red)}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,37,64,0.55);z-index:200;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.25s}
+.modal-overlay.show{opacity:1;pointer-events:all}
+.modal-sheet{background:var(--white);border-radius:20px 20px 0 0;padding:20px 20px 36px;width:100%;max-width:480px;transform:translateY(100%);transition:transform 0.3s cubic-bezier(.32,1,.4,1)}
+.modal-overlay.show .modal-sheet{transform:translateY(0)}
+.modal-handle{width:36px;height:4px;background:var(--gray-2);border-radius:2px;margin:0 auto 16px}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:14px}
+.summary-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--gray-2)}
+.summary-row:last-child{border:none}
+.summary-key{font-size:12px;color:var(--gray-4)}
+.summary-val{font-size:13px;font-weight:600;text-align:right;max-width:60%}
+.btn-modal-primary{flex:1;padding:13px;background:var(--blue-deep);color:var(--white);border:none;border-radius:var(--radius);font-size:14px;font-weight:700;cursor:pointer}
+.btn-modal-sec{padding:13px 18px;background:var(--gray-1);color:var(--gray-5);border:1.5px solid var(--gray-2);border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer}
+
+.suggest-item{padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--gray-2);font-size:13px;transition:background 0.1s}
+.suggest-item:last-child{border:none}
+.suggest-item:hover,.suggest-item.active{background:var(--teal-soft)}
+.suggest-item .suggest-nama{font-weight:600;color:var(--blue-deep)}
+.suggest-item .suggest-sub{font-size:11px;color:var(--gray-4);margin-top:2px}
+@media(min-width:481px){.bottom-bar{left:50%;right:auto;transform:translateX(-50%);width:480px}.toast{max-width:420px}}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="app-header">
+  <div class="header-top">
+    <div class="header-logo">💧</div>
+    <div class="header-title">
+      <h1>Pos Hidrologi — BWS Kalimantan IV</h1>
+      <p>QC &amp; Inspeksi Lapangan</p>
+    </div>
+    <button class="setup-toggle" onclick="toggleSetup()" id="setupToggleBtn">⚙️ Config</button>
+  </div>
+  <div class="mode-row">
+    <button class="mode-btn active" id="modeQC" onclick="switchMode('qc')">📋 Form QC</button>
+    <button class="mode-btn" id="modeIns" onclick="switchMode('ins')">🔍 Inspeksi</button>
+  </div>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressFill"></div></div>
+  <div class="step-nav" id="stepNavQC">
+    <button class="step-btn active" onclick="goTo('sec-0')">📋 Identitas</button>
+    <button class="step-btn" onclick="goTo('sec-1')">🏗 Bangunan</button>
+    <button class="step-btn" onclick="goTo('qcDynamic')">🔧 QC</button>
+    <button class="step-btn" onclick="goTo('sec-catatan')">📝 Catatan</button>
+  </div>
+  <div class="step-nav" id="stepNavIns" style="display:none">
+    <button class="step-btn active" onclick="goTo('ins-header')">📋 Header</button>
+    <button class="step-btn" onclick="goTo('ins-1')">⚙️ Peralatan</button>
+    <button class="step-btn" onclick="goTo('ins-2')">📦 Perlengkapan</button>
+    <button class="step-btn" onclick="goTo('ins-3')">🏗 Bangunan</button>
+    <button class="step-btn" onclick="goTo('ins-4')">📝 Keterangan</button>
+    <button class="step-btn" onclick="goTo('ins-foto')">📸 Foto</button>
+  </div>
+</div>
+
+<!-- PASSWORD MODAL -->
+<div class="modal-overlay" id="pwModal" onclick="if(event.target===this)closePasswordModal()">
+  <div class="modal-sheet" style="max-width:360px;margin:0 auto">
+    <div class="modal-handle"></div>
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:36px;margin-bottom:6px">🔐</div>
+      <div class="modal-title" style="margin:0;font-size:15px">Akses Config Admin</div>
+      <div style="font-size:11px;color:var(--gray-4);margin-top:4px">Password diverifikasi dari Google Sheets</div>
+    </div>
+
+    <div class="field" style="margin-top:0">
+      <div class="field-label" style="font-size:11px">Apps Script URL</div>
+      <input id="pwAppsUrl" type="url" placeholder="https://script.google.com/macros/s/..."
+        class="field-input" style="font-size:11px;font-family:monospace"
+        onkeydown="if(event.key==='Enter')document.getElementById('pwInput').focus()">
+    </div>
+
+    <div class="field" style="margin-top:10px">
+      <div class="field-label" style="font-size:11px">Password Admin</div>
+      <input type="password" id="pwInput" placeholder="••••••••"
+        class="field-input" style="font-size:16px;letter-spacing:4px;text-align:center"
+        onkeydown="if(event.key==='Enter')submitPassword()">
+    </div>
+
+    <div id="pwError" style="font-size:12px;color:var(--red);text-align:center;margin-top:8px;min-height:16px"></div>
+    <div id="pwStatus" style="font-size:11px;color:var(--gray-4);text-align:center;min-height:16px"></div>
+
+    <div style="display:flex;gap:10px;margin-top:14px">
+      <button class="btn-modal-sec" onclick="closePasswordModal()" style="flex:1">Batal</button>
+      <button class="btn-modal-primary" id="pwSubmitBtn" onclick="submitPassword()" style="flex:2">🔓 Masuk</button>
+    </div>
+
+    <div style="background:var(--gray-1);border-radius:8px;padding:10px 12px;margin-top:14px">
+      <div style="font-size:11px;font-weight:600;color:var(--gray-5);margin-bottom:4px">📋 Setup password di Google Sheets:</div>
+      <div style="font-size:11px;color:var(--gray-4);line-height:1.7">
+        1. Buat sheet baru bernama <b>Config</b><br>
+        2. Cell A1: <code style="background:var(--gray-2);padding:1px 4px;border-radius:4px">admin_password</code><br>
+        3. Cell B1: <i>password yang diinginkan</i><br>
+        4. Simpan → password berlaku di semua perangkat
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SETUP (collapsible) -->
+<div class="setup-panel" id="setupPanel">
+  <div class="setup-title">⚙️ Konfigurasi API</div>
+  <div class="setup-row">
+    <input class="setup-input" id="sheetsId" placeholder="Spreadsheet ID (wajib)">
+    <input class="setup-input" id="driveId" placeholder="Folder ID Drive (opsional)">
+  </div>
+  <div class="setup-row">
+    <input class="setup-input" id="apiKey" placeholder="Google API Key (opsional)" type="password">
+    <input class="setup-input" id="appsScriptUrl" placeholder="Apps Script URL (opsional)">
+  </div>
+  <div class="setup-row">
+    <button class="btn-setup" onclick="saveConfig()" style="flex:none">Simpan & Muat Pos</button>
+    <button class="btn-setup" onclick="showAppsScriptGuide()" style="flex:none;background:rgba(255,255,255,0.15);color:white">📖 Panduan</button>
+    <button class="btn-setup" onclick="lockConfig()" style="flex:none;background:rgba(229,57,53,0.7);color:white" title="Kunci Config">🔒 Kunci</button>
+  </div>
+  <div id="configStatus" style="margin-top:4px"></div>
+</div>
+
+<!-- Apps Script Guide Modal -->
+<div class="modal-overlay" id="appsScriptModal" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="modal-sheet" style="max-height:80vh;overflow-y:auto">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📖 Setup Google Apps Script</div>
+    <div style="font-size:13px;color:var(--gray-5);line-height:1.8">
+      <p style="margin-bottom:12px">Apps Script adalah cara terbaik agar database pos bisa diakses tanpa CORS issue.</p>
+      <div style="background:var(--gray-1);border-radius:8px;padding:14px;margin-bottom:12px">
+        <div style="font-weight:700;font-size:12px;color:var(--blue-mid);margin-bottom:8px">LANGKAH-LANGKAH:</div>
+        <div style="font-size:12px;line-height:2">
+          1. Buka Google Sheets yang berisi sheet DataPos<br>
+          2. Klik menu <b>Extensions → Apps Script</b><br>
+          3. Hapus kode yang ada, paste kode di bawah ini<br>
+          4. Klik <b>Deploy → New deployment → Web app</b><br>
+          5. Execute as: <b>Me</b> | Who has access: <b>Anyone</b><br>
+          6. Klik Deploy → Authorize → Copy URL<br>
+          7. Paste URL ke field "Apps Script URL" di atas
+        </div>
+      </div>
+      <div style="background:var(--blue-deep);border-radius:8px;padding:14px;margin-bottom:12px">
+        <div style="font-weight:700;font-size:11px;color:var(--teal);margin-bottom:8px;text-transform:uppercase">KODE APPS SCRIPT (copy semua):</div>
+        <pre id="appsScriptCode" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#A8D8EA;line-height:1.6;white-space:pre-wrap;margin:0">function doGet(e) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheetName = (e && e.parameter && e.parameter.sheet) ? e.parameter.sheet : 'DataPos';
+  var sh = ss.getSheetByName(sheetName);
+  if (!sh) return ContentService.createTextOutput(JSON.stringify({rows:[]})).setMimeType(ContentService.MimeType.JSON);
+  var rows = sh.getDataRange().getValues();
+  var data = rows.slice(sheetName === 'Config' ? 0 : 1)
+    .filter(function(r){ return r[0]; })
+    .map(function(r){ return r.map(String); });
+  var result = JSON.stringify({rows: data});
+  var cb = e && e.parameter && e.parameter.callback;
+  if (cb) {
+    return ContentService
+      .createTextOutput(cb + '(' + result + ')')
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
+  return ContentService
+    .createTextOutput(result)
+    .setMimeType(ContentService.MimeType.JSON);
+}</pre>
+      </div>
+      <button onclick="copyAppsScript()" style="width:100%;padding:10px;background:var(--teal);color:var(--blue-deep);border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;margin-bottom:8px">📋 Copy Kode Apps Script</button>
+    </div>
+    <button class="btn-modal-sec" onclick="document.getElementById('appsScriptModal').classList.remove('show')" style="width:100%;margin-top:8px">Tutup</button>
+  </div>
+</div>
+
+<!-- FORM QC -->
+<div id="formQC" class="main">
+<!-- ① IDENTITAS POS -->
+  <div class="section-card" id="sec-0">
+    <div class="section-header" onclick="toggleSection('s0')">
+      <div class="section-icon blue">📋</div>
+      <div>
+        <div class="section-label">Identitas Pos</div>
+        <div class="section-sublabel">22 atribut data pos — sesuai format BWS</div>
+      </div>
+      <span class="section-score-badge" id="badge-s0">0/8</span>
+      <span class="section-chevron open" id="chev-s0">▾</span>
+    </div>
+    <div class="section-body open" id="body-s0">
+
+      <!-- Sub-header: Info Inspeksi -->
+      <div style="background:var(--teal-soft);border-radius:8px;padding:8px 12px;margin-top:14px;display:flex;align-items:center;gap:8px;">
+        <span style="font-size:13px">🗓</span>
+        <span style="font-size:11px;font-weight:700;color:var(--blue-mid);text-transform:uppercase;letter-spacing:0.6px">Info Kunjungan Inspeksi</span>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Tanggal Inspeksi <span class="req">*</span></div>
+        <input class="field-input" id="f_tanggal" type="date" oninput="updateBadge()">
+      </div>
+
+      <div class="field">
+        <div class="field-label">Nama Inspektor <span class="req">*</span></div>
+        <input class="field-input" id="f_inspektor" placeholder="Nama lengkap petugas QC" oninput="updateBadge()">
+      </div>
+
+      <div class="field">
+        <div class="field-label">Cuaca Saat Inspeksi</div>
+        <div class="kondisi-group">
+          <button class="kondisi-btn" onclick="selectKondisi('f_cuaca','Cerah',this)" style="flex:none;min-width:64px">☀️ Cerah</button>
+          <button class="kondisi-btn" onclick="selectKondisi('f_cuaca','Berawan',this)" style="flex:none;min-width:64px">⛅ Awan</button>
+          <button class="kondisi-btn" onclick="selectKondisi('f_cuaca','Hujan',this)" style="flex:none;min-width:64px">🌧 Hujan</button>
+          <button class="kondisi-btn" onclick="selectKondisi('f_cuaca','Kabut',this)" style="flex:none;min-width:64px">🌫 Kabut</button>
+        </div>
+        <input type="hidden" id="f_cuaca">
+      </div>
+
+      <div class="field">
+        <div class="field-label">Jenis Pos / Alat <span class="req">*</span></div>
+        <div class="field-sub">Menentukan form QC & Inspeksi yang tampil</div>
+        <select class="field-select" id="f_jenisAlat" onchange="onJenisAlatChange()" style="border-color:var(--blue-mid);background:var(--white);font-weight:600">
+          <option value="">-- Pilih Jenis Pos/Alat --</option>
+          <optgroup label="🌧 Pos Curah Hujan">
+            <option value="CH_Manual">Pos Curah Hujan Manual</option>
+            <option value="CH_Telemetri">Pos Curah Hujan Manual dan Telemetri</option>
+          </optgroup>
+          <optgroup label="🌊 Pos Duga Air">
+            <option value="DA_Manual">Pos Duga Air Manual</option>
+            <option value="DA_Telemetri">Pos Duga Air Manual dan Telemetri</option>
+          </optgroup>
+          <optgroup label="🌤 Pos Iklim">
+            <option value="IK_Manual">Pos Iklim Manual</option>
+            <option value="IK_Telemetri">Pos Iklim Manual dan Telemetri</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <hr class="field-divider">
+
+      <!-- Sub-header: Identitas Pos -->
+      <div style="background:var(--teal-soft);border-radius:8px;padding:8px 12px;margin-top:6px;display:flex;align-items:center;gap:8px;">
+        <span style="font-size:13px">🏷</span>
+        <span style="font-size:11px;font-weight:700;color:var(--blue-mid);text-transform:uppercase;letter-spacing:0.6px">Identitas Pos (1–7)</span>
+      </div>
+
+      <!-- 1. Nama Pos -->
+      <div class="field" style="position:relative">
+        <div class="field-label"><span style="color:var(--gray-3);font-family:monospace;font-size:11px">1 </span>Nama Pos <span class="req">*</span></div>
+        <div style="position:relative">
+          <input class="field-input" id="f_namaPOS" placeholder="Ketik nama pos..." autocomplete="off"
+            oninput="onPosInput(this.value)" onblur="setTimeout(hideSuggest,200)" style="padding-right:36px">
+          <span id="posLoadIcon" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:14px;display:none">⏳</span>
+        </div>
+        <div id="posSuggestBox" style="display:none;position:absolute;left:0;right:0;top:100%;z-index:500;background:var(--white);border:1.5px solid var(--blue-light);border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);max-height:220px;overflow-y:auto;margin-top:2px"></div>
+        <div id="posDbStatus" style="font-size:11px;color:var(--gray-4);margin-top:4px"></div>
+      </div>
+
+      <!-- 2. No. Register -->
+      <div class="field">
+        <div class="field-label"><span style="color:var(--gray-3);font-family:monospace;font-size:11px">2 </span>No. Register <span class="req">*</span></div>
+        <input class="field-input" id="f_noRegister" placeholder="cth. 04.13.A3.003" oninput="updateBadge()" style="font-family:'JetBrains Mono',monospace;font-size:13px">
+      </div>
+
+      <!-- 3. DAS -->
+      <div class="field">
+        <div class="field-label"><span style="color:var(--gray-3);font-family:monospace;font-size:11px">3 </span>DAS (Daerah Aliran Sungai) <span class="req">*</span></div>
+        <input class="field-input" id="f_das" placeholder="cth. Samboja" oninput="updateBadge()">
+      </div>
+
+      <!-- 4. Induk Sungai -->
+      <div class="field">
+        <div class="field-label"><span style="color:var(--gray-3);font-family:monospace;font-size:11px">4 </span>Induk Sungai</div>
+        <input class="field-input" id="f_indukSungai" placeholder="cth. SAMBOJA" oninput="updateBadge()">
+      </div>
+
+      <!-- 5. Sungai -->
+      <div class="field">
+        <div class="field-label"><span style="color:var(--gray-3);font-family:monospace;font-size:11px">5 </span>Sungai</div>
+        <input class="field-input" id="f_sungai" placeholder="cth. SAMBOJA" oninput="updateBadge()">
+      </div>
+
+      <!-- 6. Wilayah Sungai -->
+      <div class="field">
+        <div class="field-label"><span style="color:var(--gray-3);font-family:monospace;font-size:11px">6 </span>Wilayah Sungai <span class="req">*</span></div>
+        <select class="field-select" id="f_wilayahSungai" onchange="updateBadge()">
+          <option value="">-- Pilih Wilayah Sungai --</option>
+          <option>BENGALON</option>
+          <option>BONTANG</option>
+          <option>KANDILO</option>
+          <option>KOLEK</option>
+          <option>MAHAKAM</option>
+          <option>MANGGAR</option>
+          <option>MARANGKAYU</option>
+          <option>SANGGAI</option>
+          <option>TELAKE</option>
+          <option>TUNAN</option>
+          <option>WAIN</option>
+          <option>WS Mahakam</option>
+          <option>WS Berau Kelai</option>
+          <option>WS Kayan</option>
+          <option>WS Karangan</option>
+        </select>
+      </div>
+
+      <!-- 7. Alamat -->
+      <div class="field">
+        <div class="field-label"><span style="color:var(--gray-3);font-family:monospace;font-size:11px">7 </span>Alamat Lengkap</div>
+        <textarea class="field-textarea" id="f_alamat" placeholder="Jalan, desa, kecamatan, kabupaten, provinsi, kode pos" style="min-height:60px"></textarea>
+      </div>
+
+      <hr class="field-divider">
+
+      <!-- Sub-header: Lokasi -->
+      <div style="background:var(--teal-soft);border-radius:8px;padding:8px 12px;margin-top:6px;display:flex;align-items:center;gap:8px;">
+        <span style="font-size:13px">📍</span>
+        <span style="font-size:11px;font-weight:700;color:var(--blue-mid);text-transform:uppercase;letter-spacing:0.6px">Lokasi (8)</span>
+      </div>
+
+      <!-- 8a. Desa -->
+      <div class="field">
+        <div class="field-label"><span style="color:var(--gray-3);font-family:monospace;font-size:11px">8a</span> Desa</div>
+        <input class="field-input" id="f_desa" placeholder="cth. KARYA JAYA" oninput="updateBadge()">
+      </div>
+
+      <!-- 8b. Kecamatan -->
+      <div class="field">
+        <div class="field-label"><span style="color:var(--gray-3);font-family:monospace;font-size:11px">8b</span> Kecamatan</div>
+        <input class="field-input" id="f_kecamatan" placeholder="cth. SAMBOJA" oninput="updateBadge()">
+      </div>
+
+      <!-- 8c. Kabupaten -->
+      <div class="field">
+        <div class="field-label"><span style="color:var(--gray-3);font-family:monospace;font-size:11px">8c</span> Kabupaten</div>
+        <input class="field-input" id="f_kabupaten" placeholder="cth. KUTAI KARTANEGARA" oninput="updateBadge()">
+      </div>
+
+      <!-- 8d. Provinsi -->
+      <div class="field">
+        <div class="field-label"><span style="color:var(--gray-3);font-family:monospace;font-size:11px">8d</span> Provinsi</div>
+        <select class="field-select" id="f_provinsi" onchange="updateBadge()">
+          <option value="">-- Pilih Provinsi --</option>
+          <option>KALIMANTAN TIMUR</option>
+          <option>KALIMANTAN UTARA</option>
+          <option>KALIMANTAN SELATAN</option>
+          <option>KALIMANTAN TENGAH</option>
+          <option>KALIMANTAN BARAT</option>
+        </select>
+      </div>
+
+      <hr class="field-divider">
+
+      <!-- Sub-header: Koordinat & Teknis -->
+      <div style="background:var(--teal-soft);border-radius:8px;padding:8px 12px;margin-top:6px;display:flex;align-items:center;gap:8px;">
+        <span style="font-size:13px">⚙️</span>
+        <span style="font-size:11px;font-weight:700;color:var(--blue-mid);text-transform:uppercase;letter-spacing:0.6px">Data Teknis (9–22)</span>
+      </div>
+
+      <!-- 9. Koordinat -->
+      <div class="field">
+        <div class="field-label"><span style="color:var(--gray-3);font-family:monospace;font-size:11px">9 </span>Koordinat <span class="req">*</span></div>
+        <div class="field-sub">Format DMS atau desimal — tekan 📡 untuk GPS otomatis</div>
+        <div class="gps-row">
+          <input class="field-input" id="f_lat"  placeholder="Lintang / LS" style="font-family:'JetBrains Mono',monospace;font-size:12px">
+          <input class="field-input" id="f_lon"  placeholder="Bujur / BT"  style="font-family:'JetBrains Mono',monospace;font-size:12px">
+          <button class="btn-gps" onclick="getGPS()" title="Ambil GPS otomatis">📡</button>
+        </div>
+        <input class="field-input" id="f_koordinatDMS" placeholder="cth. 117°08'11.0&quot;BT dan 0°30'28.3&quot;LS" style="margin-top:6px;font-size:12px" oninput="updateBadge()">
+      </div>
+
+      <!-- 10. Elevasi -->
+      <div class="field">
+        <div class="field-label"><span style="color:var(--gray-3);font-family:monospace;font-size:11px">10</span> Elevasi (m dpl)</div>
+        <input class="field-input" id="f_elevasi" placeholder="cth. 15.5" type="number" step="0.1" oninput="updateBadge()">
+      </div>
+
+      <!-- 11. Status Tanah -->
+      <div class="field">
+        <div class="field-label"><span style="color:var(--gray-3);font-family:monospace;font-size:11px">11</span> Status Tanah</div>
+        <select class="field-select" id="f_statusTanah" onchange="updateBadge()">
+          <option value="">-- Pilih Status --</option>
+          <option>Tanah Negara</option>
+          <option>Tanah Masyarakat</option>
+          <option>Tanah Pemda</option>
+          <option>Tanah Pemkab</option>
+          <option>Hak Milik</option>
+          <option>Hak Guna Usaha</option>
+          <option>Hak Pakai</option>
+        </select>
+      </div>
+
+      <!-- 12. Kondisi Bangunan Pos -->
+      <div class="field">
+        <div class="field-label"><span style="color:var(--gray-3);font-family:monospace;font-size:11px">12</span> Kondisi Bangunan Pos</div>
+        <div class="kondisi-group">
+          <button class="kondisi-btn" onclick="selectKondisi('f_kondisiBangunan','Baik',this)">✅ Baik</button>
+          <button class="kondisi-btn" onclick="selectKondisi('f_kondisiBangunan','Sedang',this)">⚠️ Sedang</button>
+          <button class="kondisi-btn" onclick="selectKondisi('f_kondisiBangunan','Rusak',this)">❌ Rusak</button>
+        </div>
+        <input type="hidden" id="f_kondisiBangunan">
+      </div>
+
+      <!-- 14. Kondisi Alat -->
+      <div class="field">
+        <div class="field-label"><span style="color:var(--gray-3);font-family:monospace;font-size:11px">14</span> Kondisi Alat</div>
+        <div class="kondisi-group">
+          <button class="kondisi-btn" onclick="selectKondisi('f_kondisiAlat','Baik',this)">✅ Baik</button>
+          <button class="kondisi-btn" onclick="selectKondisi('f_kondisiAlat','Sedang',this)">⚠️ Sedang</button>
+          <button class="kondisi-btn" onclick="selectKondisi('f_kondisiAlat','Rusak',this)">❌ Rusak</button>
+        </div>
+        <input type="hidden" id="f_kondisiAlat">
+      </div>
+
+      <!-- 15. Ketersediaan Listrik -->
+      <div class="field">
+        <div class="field-label"><span style="color:var(--gray-3);font-family:monospace;font-size:11px">15</span> Ketersediaan Listrik</div>
+        <div class="kondisi-group">
+          <button class="kondisi-btn" onclick="selectKondisi('f_listrik','Tersedia',this)" style="flex:none;min-width:80px">⚡ Tersedia</button>
+          <button class="kondisi-btn" onclick="selectKondisi('f_listrik','Solar Panel',this)" style="flex:none;min-width:80px">☀️ Solar</button>
+          <button class="kondisi-btn" onclick="selectKondisi('f_listrik','Tidak Ada',this)" style="flex:none;min-width:80px">🚫 Tidak Ada</button>
+        </div>
+        <input type="hidden" id="f_listrik">
+      </div>
+
+      <!-- 16. Tipe Sensor -->
+      <div class="field">
+        <div class="field-label"><span style="color:var(--gray-3);font-family:monospace;font-size:11px">16</span> Tipe Sensor</div>
+        <select class="field-select" id="f_tipeSensor" onchange="updateBadge()">
+          <option value="">-- Pilih Tipe --</option>
+          <option>Non Sensor</option>
+          <option>Tekanan (Pressure)</option>
+          <option>Pelampung (Float)</option>
+          <option>Radar</option>
+          <option>Ultrasonik</option>
+          <option>Tipping Bucket</option>
+          <option>Syphon</option>
+        </select>
+      </div>
+
+      <!-- 17. Didirikan Oleh -->
+      <div class="field">
+        <div class="field-label"><span style="color:var(--gray-3);font-family:monospace;font-size:11px">17</span> Didirikan Oleh</div>
+        <select class="field-select" id="f_didirikanOleh" onchange="updateBadge()">
+          <option value="">-- Pilih Instansi --</option>
+          <option>PBPS</option>
+          <option>PBPP</option>
+          <option>PBPD</option>
+          <option>BHLK</option>
+          <option>BWS KIV SMD</option>
+          <option>BWS K-IV Samarinda</option>
+          <option>BWS Kalimantan IV</option>
+          <option>TAD-DPU</option>
+          <option>BMKG</option>
+          <option>Pemerintah Daerah</option>
+          <option>Lainnya</option>
+        </select>
+      </div>
+
+      <!-- 18. Mulai Operasi Tahun -->
+      <div class="field">
+        <div class="field-label"><span style="color:var(--gray-3);font-family:monospace;font-size:11px">18</span> Mulai Operasi Tahun</div>
+        <input class="field-input" id="f_tahunOperasi" placeholder="cth. 2003" type="number" min="1900" max="2099" oninput="updateBadge()">
+      </div>
+
+      <!-- 19. Instansi Pengelola -->
+      <div class="field">
+        <div class="field-label"><span style="color:var(--gray-3);font-family:monospace;font-size:11px">19</span> Instansi Pengelola</div>
+        <select class="field-select" id="f_instansiPengelola" onchange="updateBadge()">
+          <option value="">-- Pilih Instansi --</option>
+          <option>BWS K-IV Samarinda</option>
+          <option>BWSS Kalimantan III</option>
+          <option>BMKG</option>
+          <option>Dinas PUPR Provinsi</option>
+          <option>Dinas PUPR Kabupaten</option>
+          <option>Lainnya</option>
+        </select>
+      </div>
+
+      <!-- 20. Penjaga Pos -->
+      <div class="field">
+        <div class="field-label"><span style="color:var(--gray-3);font-family:monospace;font-size:11px">20</span> Penjaga Pos (Petugas)</div>
+        <input class="field-input" id="f_penjagaPos" placeholder="Nama penjaga pos" oninput="updateBadge()">
+      </div>
+
+      <!-- 21. Kualitas Jaringan -->
+      <div class="field">
+        <div class="field-label"><span style="color:var(--gray-3);font-family:monospace;font-size:11px">21</span> Kualitas Jaringan (Sinyal)</div>
+        <div class="kondisi-group">
+          <button class="kondisi-btn" onclick="selectKondisi('f_kualitasJaringan','Baik',this)">✅ Baik</button>
+          <button class="kondisi-btn" onclick="selectKondisi('f_kualitasJaringan','Sedang',this)">⚠️ Sedang</button>
+          <button class="kondisi-btn" onclick="selectKondisi('f_kualitasJaringan','Buruk',this)">❌ Buruk</button>
+          <button class="kondisi-btn" onclick="selectKondisi('f_kualitasJaringan','Tidak Ada',this)" style="flex:none;min-width:64px">🚫 N/A</button>
+        </div>
+        <input type="hidden" id="f_kualitasJaringan">
+      </div>
+
+      <!-- 22. Keterangan -->
+      <div class="field">
+        <div class="field-label"><span style="color:var(--gray-3);font-family:monospace;font-size:11px">22</span> Keterangan Tambahan</div>
+        <textarea class="field-textarea" id="f_keterangan" placeholder="Informasi lain yang relevan tentang pos ini..."></textarea>
+      </div>
+
+      <hr class="field-divider">
+
+      <!-- FOTO IDENTITAS -->
+      <div style="background:var(--teal-soft);border-radius:8px;padding:8px 12px;margin-top:6px;display:flex;align-items:center;gap:8px;">
+        <span style="font-size:13px">📸</span>
+        <span style="font-size:11px;font-weight:700;color:var(--blue-mid);text-transform:uppercase;letter-spacing:0.6px">Foto Dokumentasi Pos</span>
+        <span style="margin-left:auto;font-size:11px;color:var(--gray-4);font-weight:600" id="idFotoCount">0/2 foto</span>
+      </div>
+
+      <div class="field">
+        <div class="field-sub" style="margin-top:8px">Foto kondisi bangunan & alat pos — maksimal 2 foto</div>
+
+        <!-- Slot Foto 1 -->
+        <div style="margin-top:10px">
+          <div class="field-label" style="font-size:11px;margin-bottom:5px">📷 Foto 1 — Tampak Depan / Bangunan</div>
+          <div class="id-photo-slot" id="idSlot0" onclick="triggerIdPhoto(0)">
+            <input type="file" id="idPhotoInput0" accept="image/*" capture="environment"
+              style="display:none" onchange="handleIdPhoto(event,0)">
+            <div class="id-slot-empty" id="idEmpty0">
+              <div style="font-size:28px">📷</div>
+              <div style="font-size:12px;color:var(--gray-4);font-weight:500;margin-top:4px">Ketuk untuk foto</div>
+              <div style="font-size:11px;color:var(--gray-3);margin-top:2px">Bangunan / tampak depan pos</div>
+            </div>
+            <div class="id-slot-filled" id="idFilled0" style="display:none">
+              <img id="idImg0" style="width:100%;height:100%;object-fit:cover;border-radius:10px">
+              <div style="position:absolute;top:6px;right:6px;display:flex;gap:5px">
+                <button onclick="event.stopPropagation();retakeIdPhoto(0)" style="background:rgba(10,37,64,0.7);color:white;border:none;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer">🔄 Ganti</button>
+                <button onclick="event.stopPropagation();removeIdPhoto(0)" style="background:rgba(229,57,53,0.85);color:white;border:none;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer">✕</button>
+              </div>
+              <div id="idStatus0" style="position:absolute;bottom:6px;left:6px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;background:rgba(10,37,64,0.7);color:white"></div>
+            </div>
+          </div>
+          <input class="field-input" id="idCaption0" placeholder="Keterangan foto 1 (opsional)"
+            style="margin-top:6px;font-size:12px" oninput="updateBadge()">
+        </div>
+
+        <!-- Slot Foto 2 -->
+        <div style="margin-top:12px">
+          <div class="field-label" style="font-size:11px;margin-bottom:5px">📷 Foto 2 — Tampak Alat / Detail</div>
+          <div class="id-photo-slot" id="idSlot1" onclick="triggerIdPhoto(1)">
+            <input type="file" id="idPhotoInput1" accept="image/*" capture="environment"
+              style="display:none" onchange="handleIdPhoto(event,1)">
+            <div class="id-slot-empty" id="idEmpty1">
+              <div style="font-size:28px">📷</div>
+              <div style="font-size:12px;color:var(--gray-4);font-weight:500;margin-top:4px">Ketuk untuk foto</div>
+              <div style="font-size:11px;color:var(--gray-3);margin-top:2px">Detail alat / sensor / papan nama</div>
+            </div>
+            <div class="id-slot-filled" id="idFilled1" style="display:none">
+              <img id="idImg1" style="width:100%;height:100%;object-fit:cover;border-radius:10px">
+              <div style="position:absolute;top:6px;right:6px;display:flex;gap:5px">
+                <button onclick="event.stopPropagation();retakeIdPhoto(1)" style="background:rgba(10,37,64,0.7);color:white;border:none;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer">🔄 Ganti</button>
+                <button onclick="event.stopPropagation();removeIdPhoto(1)" style="background:rgba(229,57,53,0.85);color:white;border:none;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer">✕</button>
+              </div>
+              <div id="idStatus1" style="position:absolute;bottom:6px;left:6px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;background:rgba(10,37,64,0.7);color:white"></div>
+            </div>
+          </div>
+          <input class="field-input" id="idCaption1" placeholder="Keterangan foto 2 (opsional)"
+            style="margin-top:6px;font-size:12px" oninput="updateBadge()">
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  
+<!-- ② BANGUNAN POS -->
+  <div class="section-card" id="sec-1">
+    <div class="section-header" onclick="toggleSection('s1')">
+      <div class="section-icon teal">🏗</div>
+      <div>
+        <div class="section-label">Kondisi Bangunan Pos</div>
+        <div class="section-sublabel">Fisik & struktur bangunan</div>
+      </div>
+      <span class="section-score-badge" id="badge-s1">0/20</span>
+      <span class="section-chevron" id="chev-s1">▾</span>
+    </div>
+    <div class="section-body" id="body-s1">
+
+      <!-- Pondasi -->
+      <div class="field">
+        <div class="field-label">B1. Kondisi Pondasi / Struktur Bawah <span class="req">*</span></div>
+        <div class="kondisi-group">
+          <button class="kondisi-btn" onclick="selectKondisi('f_b1','Baik',this)">✅ Baik</button>
+          <button class="kondisi-btn" onclick="selectKondisi('f_b1','Sedang',this)">⚠️ Sedang</button>
+          <button class="kondisi-btn" onclick="selectKondisi('f_b1','Rusak',this)">❌ Rusak</button>
+        </div>
+        <input type="hidden" id="f_b1">
+        <div class="field" style="margin-top:8px">
+          <div class="field-label" style="font-weight:500">Nilai (1–5)</div>
+          <div class="score-group" id="score_b1">
+            <button class="score-btn" onclick="setScore('f_sb1',1,this)">1</button>
+            <button class="score-btn" onclick="setScore('f_sb1',2,this)">2</button>
+            <button class="score-btn" onclick="setScore('f_sb1',3,this)">3</button>
+            <button class="score-btn" onclick="setScore('f_sb1',4,this)">4</button>
+            <button class="score-btn" onclick="setScore('f_sb1',5,this)">5</button>
+          </div>
+          <input type="hidden" id="f_sb1">
+        </div>
+        <textarea class="field-textarea" id="f_cb1" placeholder="Catatan kondisi pondasi..." style="margin-top:8px"></textarea>
+      </div>
+
+      <hr class="field-divider">
+
+      <!-- Dinding/Atap -->
+      <div class="field">
+        <div class="field-label">B2. Kondisi Dinding & Atap Shelter <span class="req">*</span></div>
+        <div class="kondisi-group">
+          <button class="kondisi-btn" onclick="selectKondisi('f_b2','Baik',this)">✅ Baik</button>
+          <button class="kondisi-btn" onclick="selectKondisi('f_b2','Sedang',this)">⚠️ Sedang</button>
+          <button class="kondisi-btn" onclick="selectKondisi('f_b2','Rusak',this)">❌ Rusak</button>
+        </div>
+        <input type="hidden" id="f_b2">
+        <div class="field" style="margin-top:8px">
+          <div class="field-label" style="font-weight:500">Nilai (1–5)</div>
+          <div class="score-group">
+            <button class="score-btn" onclick="setScore('f_sb2',1,this)">1</button>
+            <button class="score-btn" onclick="setScore('f_sb2',2,this)">2</button>
+            <button class="score-btn" onclick="setScore('f_sb2',3,this)">3</button>
+            <button class="score-btn" onclick="setScore('f_sb2',4,this)">4</button>
+            <button class="score-btn" onclick="setScore('f_sb2',5,this)">5</button>
+          </div>
+          <input type="hidden" id="f_sb2">
+        </div>
+        <textarea class="field-textarea" id="f_cb2" placeholder="Catatan dinding & atap..." style="margin-top:8px"></textarea>
+      </div>
+
+      <hr class="field-divider">
+
+      <!-- Pagar/Keamanan -->
+      <div class="field">
+        <div class="field-label">B3. Pagar & Keamanan Pos</div>
+        <div class="kondisi-group">
+          <button class="kondisi-btn" onclick="selectKondisi('f_b3','Baik',this)">✅ Baik</button>
+          <button class="kondisi-btn" onclick="selectKondisi('f_b3','Sedang',this)">⚠️ Sedang</button>
+          <button class="kondisi-btn" onclick="selectKondisi('f_b3','Rusak',this)">❌ Rusak</button>
+        </div>
+        <input type="hidden" id="f_b3">
+        <div class="field" style="margin-top:8px">
+          <div class="field-label" style="font-weight:500">Nilai (1–5)</div>
+          <div class="score-group">
+            <button class="score-btn" onclick="setScore('f_sb3',1,this)">1</button>
+            <button class="score-btn" onclick="setScore('f_sb3',2,this)">2</button>
+            <button class="score-btn" onclick="setScore('f_sb3',3,this)">3</button>
+            <button class="score-btn" onclick="setScore('f_sb3',4,this)">4</button>
+            <button class="score-btn" onclick="setScore('f_sb3',5,this)">5</button>
+          </div>
+          <input type="hidden" id="f_sb3">
+        </div>
+      </div>
+
+      <hr class="field-divider">
+
+      <!-- Tangga pengamatan -->
+      <div class="field">
+        <div class="field-label">B4. Tangga & Akses Pengamatan</div>
+        <div class="kondisi-group">
+          <button class="kondisi-btn" onclick="selectKondisi('f_b4','Baik',this)">✅ Baik</button>
+          <button class="kondisi-btn" onclick="selectKondisi('f_b4','Sedang',this)">⚠️ Sedang</button>
+          <button class="kondisi-btn" onclick="selectKondisi('f_b4','Rusak',this)">❌ Rusak</button>
+          <button class="kondisi-btn" onclick="selectKondisi('f_b4','N/A',this)" style="flex:none;min-width:50px">N/A</button>
+        </div>
+        <input type="hidden" id="f_b4">
+      </div>
+
+    </div>
+  </div>
+
+  
+  <!-- QC DYNAMIC -->
+  <div id="qcDynamic" style="margin-bottom:14px"></div>
+
+  <!-- CATATAN -->
+  <div class="section-card" id="sec-catatan">
+    <div class="section-header" onclick="toggleSection('catatan')">
+      <div class="section-icon blue">📝</div>
+      <div><div class="section-label">Catatan &amp; Rekomendasi</div><div class="section-sublabel">Temuan &amp; tindak lanjut</div></div>
+      <span class="section-chevron" id="chev-catatan">▾</span>
+    </div>
+    <div class="section-body" id="body-catatan">
+      <div class="field">
+        <div class="field-label">Catatan Umum &amp; Rekomendasi</div>
+        <textarea class="field-textarea" id="f_catatanUmum" placeholder="Temuan utama, tindak lanjut..." style="min-height:100px"></textarea>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FORM INSPEKSI -->
+<div id="formIns" class="main" style="display:none">
+  <div class="section-card" id="ins-header">
+    <div class="section-header" onclick="toggleSection('ins-hdr')">
+      <div class="section-icon blue">📋</div>
+      <div><div class="section-label">Header Inspeksi</div><div class="section-sublabel" id="ins-header-sub">Pilih Jenis Alat di Identitas Pos</div></div>
+      <span class="section-chevron open" id="chev-ins-hdr">▾</span>
+    </div>
+    <div class="section-body open" id="body-ins-hdr"><div id="ins-header-fields"></div></div>
+  </div>
+  <div id="inspeksiDynamic"></div>
+  <div class="section-card" id="ins-foto">
+    <div class="section-header" onclick="toggleSection('ins-fot')">
+      <div class="section-icon blue">📸</div>
+      <div><div class="section-label">Foto Dokumentasi</div><div class="section-sublabel" id="ins-foto-sub">Upload foto</div></div>
+      <span style="font-size:11px;font-weight:600;color:var(--gray-4)" id="insFotoCount">0/4</span>
+      <span class="section-chevron open" id="chev-ins-fot">▾</span>
+    </div>
+    <div class="section-body open" id="body-ins-fot">
+      <div class="field-sub" style="margin-top:8px;margin-bottom:10px">Foto dikirim ke Google Drive.</div>
+      <div id="ins-foto-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM BARS -->
+<div class="bottom-bar" id="barQC">
+  <button class="btn-draft" onclick="saveDraft()">💾 Draft</button>
+  <button class="btn-save" onclick="showSubmitModal()">Kirim QC ↗</button>
+</div>
+<div class="bottom-bar" id="barIns" style="display:none">
+  <button class="btn-draft" onclick="saveInspeksiDraft()">💾 Draft</button>
+  <button class="btn-save" onclick="submitInspeksi()">Kirim Inspeksi ↗</button>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="submitModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Konfirmasi Kirim</div>
+    <div id="summaryContent"></div>
+    <div style="display:flex;gap:10px;margin-top:18px">
+      <button class="btn-modal-sec" onclick="closeModal()">Batal</button>
+      <button class="btn-modal-primary" id="btnConfirmSubmit" onclick="submitData()">✅ Kirim</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────────
+let CONFIG = { sheetsId:'', driveId:'', apiKey:'', configured:false };
+
+function loadConfig() {
+  var s = localStorage.getItem('qc_pos_config');
+  if (s) { CONFIG = Object.assign(CONFIG, JSON.parse(s)); }
+  if (s) {
+    var d = document.getElementById('appsScriptUrl');
+    if (d) d.value = CONFIG.appsScriptUrl || '';
+    var d2 = document.getElementById('apiKey');
+    if (d2) d2.value = CONFIG.apiKey || '';
+    var d3 = document.getElementById('driveId');
+    if (d3) d3.value = CONFIG.driveId || '';
+  }
+  if (CONFIG.sheetsId) {
+    CONFIG.configured = true;
+    showConfigStatus('ok', '✅ Terkonfigurasi');
+    document.getElementById('sheetsId').value = CONFIG.sheetsId || '';
+    document.getElementById('driveId').value  = CONFIG.driveId  || '';
+  }
+  var d = document.getElementById('f_tanggal');
+  if (d && !d.value) d.value = new Date().toISOString().split('T')[0];
+}
+
+function saveConfig() {
+  CONFIG.sheetsId      = document.getElementById('sheetsId').value.trim();
+  CONFIG.driveId       = document.getElementById('driveId').value.trim();
+  CONFIG.apiKey        = document.getElementById('apiKey').value.trim();
+  CONFIG.appsScriptUrl = (document.getElementById('appsScriptUrl')||{}).value ? document.getElementById('appsScriptUrl').value.trim() : CONFIG.appsScriptUrl;
+  if (!CONFIG.sheetsId || !CONFIG.apiKey) { showConfigStatus('err','❌ Wajib isi Sheets ID & API Key'); return; }
+  CONFIG.configured = true;
+  localStorage.setItem('qc_pos_config', JSON.stringify(CONFIG));
+  showConfigStatus('ok','✅ Tersimpan');
+  showToast('Konfigurasi disimpan!','success');
+  fetchPosDatabase();
+}
+
+function showConfigStatus(type, msg) {
+  var el = document.getElementById('configStatus');
+  if (el) el.innerHTML = '<span class="status-chip ' + type + '"><span class="dot"></span>' + msg + '</span>';
+}
+
+function showAppsScriptGuide() {
+  document.getElementById('appsScriptModal').classList.add('show');
+}
+function copyAppsScript() {
+  var code = document.getElementById('appsScriptCode').textContent;
+  navigator.clipboard.writeText(code).then(function() {
+    showToast('✅ Kode Apps Script berhasil di-copy!', 'success');
+  }).catch(function() {
+    showToast('Gagal copy — pilih manual teks di kotak kode', 'error');
+  });
+}
+
+var CONFIG_UNLOCKED = false;
+
+// ── PASSWORD via Google Sheets ───────────────────────────────
+// Sheet "Config" kolom A=key, kolom B=value
+// Row 1: key=admin_password, value=passwordnya
+// Diakses via Apps Script (sama seperti DataPos)
+
+function toggleSetup() {
+  if (CONFIG_UNLOCKED) {
+    var p = document.getElementById('setupPanel');
+    p.classList.toggle('open');
+  } else {
+    showPasswordModal();
+  }
+}
+
+function showPasswordModal() {
+  var modal = document.getElementById('pwModal');
+  modal.classList.add('show');
+  // Check if Apps Script URL already saved in localStorage
+  var savedCfg = localStorage.getItem('qc_pos_config');
+  if (savedCfg) {
+    try {
+      var c = JSON.parse(savedCfg);
+      if (c.appsScriptUrl) {
+        document.getElementById('pwAppsUrl').value = c.appsScriptUrl;
+      }
+    } catch(e) {}
+  }
+  setTimeout(function(){ document.getElementById('pwInput').focus(); }, 300);
+}
+
+function closePasswordModal() {
+  document.getElementById('pwModal').classList.remove('show');
+  document.getElementById('pwInput').value = '';
+  document.getElementById('pwError').textContent = '';
+  document.getElementById('pwStatus').textContent = '';
+}
+
+async function submitPassword() {
+  var pw = document.getElementById('pwInput').value.trim();
+  var appsUrl = document.getElementById('pwAppsUrl').value.trim();
+  if (!pw) { document.getElementById('pwError').textContent = '❌ Masukkan password'; return; }
+  if (!appsUrl) { document.getElementById('pwError').textContent = '❌ Masukkan Apps Script URL'; return; }
+
+  var btn = document.getElementById('pwSubmitBtn');
+  btn.textContent = '⏳ Memverifikasi...';
+  btn.disabled = true;
+  document.getElementById('pwError').textContent = '';
+  document.getElementById('pwStatus').textContent = '🔄 Mengambil password dari server...';
+
+  try {
+    // Fetch password from Google Sheets via Apps Script JSONP
+    var rows = await fetchViaScriptTag(appsUrl + (appsUrl.indexOf('?')>=0?'&':'?') + 'sheet=Config');
+    // rows = [['admin_password', 'nilai_password'], ...]
+    var serverPw = null;
+    if (rows && rows.length) {
+      rows.forEach(function(r) {
+        if (r[0] && r[0].toString().toLowerCase().trim() === 'admin_password') {
+          serverPw = r[1] ? r[1].toString().trim() : null;
+        }
+      });
+    }
+
+    if (!serverPw) {
+      // No password set yet in sheet → auto unlock (first time setup)
+      document.getElementById('pwStatus').textContent = '⚠️ Belum ada password di sheet Config — akses diberikan untuk setup pertama';
+      setTimeout(function() {
+        CONFIG_UNLOCKED = true;
+        // Save appsScriptUrl to CONFIG
+        CONFIG.appsScriptUrl = appsUrl;
+        localStorage.setItem('qc_pos_config', JSON.stringify(CONFIG));
+        closePasswordModal();
+        document.getElementById('setupPanel').classList.add('open');
+        updateLockIcon();
+        showToast('🔓 Config terbuka — silakan set password di sheet Config', 'success');
+      }, 1500);
+      return;
+    }
+
+    if (pw === serverPw) {
+      CONFIG_UNLOCKED = true;
+      CONFIG.appsScriptUrl = appsUrl;
+      // Auto-fill all config from Sheets — no need to type manually
+      rows.forEach(function(r) {
+        var key = r[0] ? r[0].toString().toLowerCase().trim() : '';
+        var val = r[1] ? r[1].toString().trim() : '';
+        if (key === 'sheetsid' || key === 'spreadsheet_id' || key === 'sheets_id')   CONFIG.sheetsId = val;
+        if (key === 'driveid'  || key === 'drive_id'  || key === 'folder_id')        CONFIG.driveId  = val;
+        if (key === 'apikey'   || key === 'api_key')                                  CONFIG.apiKey   = val;
+      });
+      CONFIG.configured = !!(CONFIG.sheetsId);
+      localStorage.setItem('qc_pos_config', JSON.stringify(CONFIG));
+      // Fill input fields so admin bisa lihat & edit
+      var el;
+      el = document.getElementById('sheetsId'); if (el) el.value = CONFIG.sheetsId;
+      el = document.getElementById('driveId');  if (el) el.value = CONFIG.driveId;
+      el = document.getElementById('apiKey');   if (el) el.value = CONFIG.apiKey;
+      el = document.getElementById('appsScriptUrl'); if (el) el.value = CONFIG.appsScriptUrl;
+      closePasswordModal();
+      document.getElementById('setupPanel').classList.add('open');
+      updateLockIcon();
+      if (CONFIG.configured) fetchPosDatabase();
+      showToast('🔓 Config berhasil dimuat dari Sheets!', 'success');
+    } else {
+      document.getElementById('pwError').textContent = '❌ Password salah';
+      document.getElementById('pwInput').value = '';
+      document.getElementById('pwInput').focus();
+    }
+  } catch(e) {
+    document.getElementById('pwError').textContent = '⚠️ Gagal verifikasi: ' + e.message;
+  }
+
+  btn.textContent = '🔓 Masuk';
+  btn.disabled = false;
+  document.getElementById('pwStatus').textContent = '';
+}
+
+function lockConfig() {
+  CONFIG_UNLOCKED = false;
+  document.getElementById('setupPanel').classList.remove('open');
+  updateLockIcon();
+  showToast('🔒 Config terkunci', '');
+}
+
+function updateLockIcon() {
+  var btn = document.getElementById('setupToggleBtn');
+  if (!btn) return;
+  if (CONFIG_UNLOCKED) {
+    btn.innerHTML = '🔓 Config';
+    btn.title = 'Klik untuk kunci';
+    btn.onclick = lockConfig;
+  } else {
+    btn.innerHTML = '🔒 Config';
+    btn.title = 'Perlu password';
+    btn.onclick = toggleSetup;
+  }
+}
+
+// ── MODE ────────────────────────────────────────────────────
+var currentMode = 'qc';
+function switchMode(mode) {
+  currentMode = mode;
+  document.getElementById('formQC').style.display   = mode === 'qc'  ? 'block' : 'none';
+  document.getElementById('formIns').style.display  = mode === 'ins' ? 'block' : 'none';
+  document.getElementById('barQC').style.display    = mode === 'qc'  ? 'flex'  : 'none';
+  document.getElementById('barIns').style.display   = mode === 'ins' ? 'flex'  : 'none';
+  document.getElementById('stepNavQC').style.display = mode === 'qc'  ? 'flex'  : 'none';
+  document.getElementById('stepNavIns').style.display = mode === 'ins' ? 'flex' : 'none';
+  document.getElementById('modeQC').className  = 'mode-btn' + (mode === 'qc'  ? ' active' : '');
+  document.getElementById('modeIns').className = 'mode-btn' + (mode === 'ins' ? ' active' : '');
+  if (mode === 'ins') renderInspeksiForm();
+}
+
+// ── NAVIGATION ──────────────────────────────────────────────
+function goTo(id) {
+  var el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+// ── TOGGLE SECTION ──────────────────────────────────────────
+function toggleSection(id) {
+  var body = document.getElementById('body-' + id);
+  var chev = document.getElementById('chev-' + id);
+  if (body) body.classList.toggle('open');
+  if (chev) chev.classList.toggle('open');
+}
+
+// ── KONDISI SELECTOR ────────────────────────────────────────
+function selectKondisi(fieldId, value, btn) {
+  document.getElementById(fieldId).value = value;
+  var grp = btn.parentElement;
+  grp.querySelectorAll('.kondisi-btn').forEach(function(b) {
+    b.classList.remove('selected-baik','selected-sedang','selected-rusak');
+  });
+  var goodVals = ['Baik','Bersih','Terkendali','Tidak ada','Hadir rutin','Lengkap','Tepat waktu','Paham','Normal','Tersedia','Tegak'];
+  var badVals  = ['Rusak','Kotor','Ganggu sensor','Banyak','Sering absen','Tidak ada','Sering terlambat','Kurang','Banjir/Kering','Tidak Ada'];
+  if (goodVals.indexOf(value) >= 0) btn.classList.add('selected-baik');
+  else if (badVals.indexOf(value) >= 0) btn.classList.add('selected-rusak');
+  else btn.classList.add('selected-sedang');
+  updateBadge();
+}
+
+// ── GPS ─────────────────────────────────────────────────────
+function getGPS() {
+  if (!navigator.geolocation) { showToast('GPS tidak didukung','error'); return; }
+  showToast('Mengambil koordinat...');
+  navigator.geolocation.getCurrentPosition(function(pos) {
+    var lat = pos.coords.latitude, lon = pos.coords.longitude;
+    document.getElementById('f_lat').value = lat.toFixed(6);
+    document.getElementById('f_lon').value = lon.toFixed(6);
+    function toDMS(deg, isLat) {
+      var d = Math.floor(Math.abs(deg)), m = Math.floor((Math.abs(deg)-d)*60);
+      var s = ((Math.abs(deg)-d-m/60)*3600).toFixed(1);
+      var dir = isLat ? (deg>=0?'LU':'LS') : (deg>=0?'BT':'BB');
+      return d+'°'+m+"'"+s+'"'+dir;
+    }
+    var el = document.getElementById('f_koordinatDMS');
+    if (el) el.value = toDMS(lon,false)+' dan '+toDMS(lat,true);
+    showToast('📍 Koordinat diambil!','success');
+  }, function(err) { showToast('Gagal: '+err.message,'error'); }, {enableHighAccuracy:true,timeout:10000});
+}
+
+// ── BADGE ───────────────────────────────────────────────────
+function updateBadge() {
+  var s0f = ['f_namaPOS','f_noRegister','f_das','f_wilayahSungai','f_jenisAlat','f_tanggal','f_inspektor'];
+  var n = s0f.filter(function(f){ var e=document.getElementById(f); return e&&e.value; }).length;
+  var b = document.getElementById('badge-s0');
+  if (b) { b.textContent = n+'/'+s0f.length; b.className='section-score-badge'+(n>0?' filled':''); }
+  var pct = Math.round(n/s0f.length*100);
+  var pf = document.getElementById('progressFill');
+  if (pf) pf.style.width = pct+'%';
+  updateQcBadges();
+  updateIdFotoCount();
+}
+
+// ── ID PHOTO (2 slots in identitas) ─────────────────────────
+var idPhotoData = [null, null];
+function triggerIdPhoto(idx) { document.getElementById('idPhotoInput'+idx).click(); }
+function handleIdPhoto(e, idx) {
+  var file = e.target.files[0]; if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    idPhotoData[idx] = { file:file, base64:ev.target.result, driveUrl:'', name:file.name, status:'pending' };
+    renderIdSlot(idx); updateIdFotoCount();
+    if (CONFIG.configured && CONFIG.driveId) uploadIdPhotoToDrive(idx);
+  };
+  reader.readAsDataURL(file); e.target.value='';
+}
+function renderIdSlot(idx) {
+  var item = idPhotoData[idx];
+  var empty = document.getElementById('idEmpty'+idx);
+  var filled = document.getElementById('idFilled'+idx);
+  var img = document.getElementById('idImg'+idx);
+  var status = document.getElementById('idStatus'+idx);
+  if (!empty) return;
+  if (item) {
+    empty.style.display='none'; filled.style.display='block'; img.src=item.base64;
+    if (status) status.textContent = item.status==='done'?'✓ Drive':item.status==='uploading'?'⬆️':'';
+  } else {
+    empty.style.display='flex'; filled.style.display='none';
+  }
+}
+function retakeIdPhoto(idx) { idPhotoData[idx]=null; document.getElementById('idPhotoInput'+idx).click(); }
+function removeIdPhoto(idx) { idPhotoData[idx]=null; renderIdSlot(idx); updateIdFotoCount(); }
+function updateIdFotoCount() {
+  var n = idPhotoData.filter(Boolean).length;
+  var el = document.getElementById('idFotoCount');
+  if (el) { el.textContent=n+'/2 foto'; el.style.color=n===2?'var(--green)':n===1?'var(--yellow)':'var(--gray-4)'; }
+}
+async function uploadIdPhotoToDrive(idx) {
+  var item = idPhotoData[idx]; if (!item||!CONFIG.apiKey||!CONFIG.driveId) return;
+  item.status='uploading'; renderIdSlot(idx);
+  try {
+    var ts = new Date().toISOString().replace(/[:.]/g,'-');
+    var nm = document.getElementById('f_namaPOS').value||'Pos';
+    var fn = 'ID_'+nm+'_'+(idx===0?'Bangunan':'Alat')+'_'+ts+'.jpg';
+    var resp = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&key='+CONFIG.apiKey, {
+      method:'POST', headers:{'Content-Type':'multipart/related; boundary=id_bound'},
+      body: buildMultipart(fn, item.file.type, item.base64.split(',')[1])
+    });
+    if (resp.ok) { var r=await resp.json(); item.driveUrl='https://drive.google.com/file/d/'+r.id+'/view'; item.status='done'; }
+    else item.status='error';
+  } catch(e) { item.status='error'; }
+  renderIdSlot(idx);
+}
+
+// ── MULTIPART BODY ──────────────────────────────────────────
+function buildMultipart(fn, mt, b64) {
+  var bnd = 'qc_bnd';
+  var meta = JSON.stringify({name:fn, parents:[CONFIG.driveId]});
+  var CRLF = '\r\n';
+  return '--'+bnd+CRLF+'Content-Type: application/json; charset=UTF-8'+CRLF+CRLF+meta+CRLF+
+    '--'+bnd+CRLF+'Content-Type: '+mt+CRLF+'Content-Transfer-Encoding: base64'+CRLF+CRLF+b64+CRLF+
+    '--'+bnd+'--';
+}
+
+// ── QC DYNAMIC ──────────────────────────────────────────────
+var qcItemPhotos = {};
+const QC_SCHEMAS = {
+  'Pos Curah Hujan Manual': [
+    {
+      section: '1. QC 1 HUJAN MANUAL KRAN',
+      sub: '1.1. Kinerja Alat Manual (Kran)',
+      icon: '🔧',
+      color: 'yellow',
+      items: [
+        { id: 'ch_1_1', no: '1.1.1', label: 'Posisi', options: ['Tegak','Miring sedikit (<±10°)','Miring besar (>±10°)'] },
+        { id: 'ch_1_2', no: '1.1.2', label: 'Kondisi Kran', options: ['Berfungsi dan tidak berkarat','Berfungsi tapi berkarat','Tidak berfungsi/ rusak'] },
+        { id: 'ch_1_3', no: '1.1.3', label: 'Kondisi Aliran Air pada Kran', options: ['Pengeluaran air lancar','Pengeluaran air tersendat','Mampat/ tersumbat'] },
+        { id: 'ch_1_4', no: '1.1.4', label: 'Corong', options: ['Berfungsi, tidak berkarat dan tidak bocor','Berfungsi, berkarat tapi tidak bocor','Tidak berfungsi'] },
+        { id: 'ch_1_5', no: '1.1.5', label: 'Fondasi', options: ['Baik, tidak ada yang keropos','Rusak ringan','Rusak parah'] },
+        { id: 'ch_1_6', no: '1.1.6', label: 'Ketersediaan Pagar', options: ['Ada, tinggi 1.2 m','Ada, tinggi tidak 1.2 m','Tidak ada'] },
+        { id: 'ch_1_7', no: '1.1.7', label: 'Kondisi Pagar', options: ['Baik terbuat dari BRC','Baik tapi tidak terbuat dari BRC','Rusak'] },
+      ]
+    },
+    {
+      section: '1. QC 1 HUJAN MANUAL KRAN',
+      sub: '1.2. Lingkungan (Pos Hujan Manual)',
+      icon: '🌿',
+      color: 'green',
+      items: [
+        { id: 'ch_2_1', no: '1.2.1', label: 'Lokasi pos (kemiringan lereng)', options: ['Berada pada kemiringan relatif datar dan tanah stabil','Berada pada kemiringan relatif datar tapi tanah kurang stabil','Berada pada kemiringan agak curam'] },
+        { id: 'ch_2_2', no: '1.2.2', label: 'Jarak antar pos', options: ['>3 Km','2–3 Km','<2 Km'] },
+        { id: 'ch_2_3', no: '1.2.3', label: 'Lokasi pos (terhadap keramaian)', options: ['Jauh dari keramaian','Dekat dengan keramaian'] },
+        { id: 'ch_2_4', no: '1.2.4', label: 'Jarak dari Pohon/ Rumah/ Bangunan', options: ['Tidak terdapat pohon dan atau rumah pada jarak ≤10 m','Terdapat sedikit pohon dan atau rumah yang tidak terlalu tinggi pada jarak ≤10 m','Banyak terdapat pohon dan atau rumah pada jarak ≤10 m'] },
+        { id: 'ch_2_5', no: '1.2.5', label: 'Kondisi kebersihan', options: ['Tidak terdapat semak belukar','Terdapat semak belukar tapi tidak terlalu tinggi (≤1.2 m)','Terdapat semak belukar yang tinggi (>1.2 m)'] },
+      ]
+    },
+    {
+      section: '1. QC 1 HUJAN MANUAL KRAN',
+      sub: '1.3. Pengamat (Pos Hujan Manual)',
+      icon: '👤',
+      color: 'purple',
+      items: [
+        { id: 'ch_3_1', no: '1.3.1', label: 'Pembacaan', options: ['Baik dan benar','Kurang cermat','Tidak cermat/ tidak di baca'] },
+        { id: 'ch_3_2', no: '1.3.2', label: 'Pemilihan Gelas Ukur', options: ['Baik dan benar','Benar tapi sudah rusak','Salah/ Tidak baik'] },
+        { id: 'ch_3_3', no: '1.3.3', label: 'Pencatatan hasil pembacaan', options: ['Benar seperti yang seharusnya pada hari yang sesuai','Pada hari tertentu tidak dilakukan pencatatan','Tidak dicatat pada hari yang seharusnya'] },
+        { id: 'ch_3_4', no: '1.3.4', label: 'Kerajinan Pencatatan', options: ['Dilakukan jam 7 pagi setiap hari','Dilakukan jam 7 pagi di hanya saat hari hujan','Jarang dilakukan'] },
+      ]
+    }
+  ],
+  'ARR (Automatic Rainfall Recorder)': [
+    {
+      section: '1. QC 1 HUJAN MANUAL KRAN',
+      sub: '1.1. Kinerja Alat Manual (Kran)',
+      icon: '🔧',
+      color: 'yellow',
+      items: [
+        { id: 'ch_1_1', no: '1.1.1', label: 'Posisi', options: ['Tegak','Miring sedikit (<±10°)','Miring besar (>±10°)'] },
+        { id: 'ch_1_2', no: '1.1.2', label: 'Kondisi Kran', options: ['Berfungsi dan tidak berkarat','Berfungsi tapi berkarat','Tidak berfungsi/ rusak'] },
+        { id: 'ch_1_3', no: '1.1.3', label: 'Kondisi Aliran Air pada Kran', options: ['Pengeluaran air lancar','Pengeluaran air tersendat','Mampat/ tersumbat'] },
+        { id: 'ch_1_4', no: '1.1.4', label: 'Corong', options: ['Berfungsi, tidak berkarat dan tidak bocor','Berfungsi, berkarat tapi tidak bocor','Tidak berfungsi'] },
+        { id: 'ch_1_5', no: '1.1.5', label: 'Fondasi', options: ['Baik, tidak ada yang keropos','Rusak ringan','Rusak parah'] },
+        { id: 'ch_1_6', no: '1.1.6', label: 'Ketersediaan Pagar', options: ['Ada, tinggi 1.2 m','Ada, tinggi tidak 1.2 m','Tidak ada'] },
+        { id: 'ch_1_7', no: '1.1.7', label: 'Kondisi Pagar', options: ['Baik terbuat dari BRC','Baik tapi tidak terbuat dari BRC','Rusak'] },
+      ]
+    },
+    {
+      section: '1. QC 1 HUJAN MANUAL KRAN',
+      sub: '1.2. Lingkungan (Pos Hujan Manual)',
+      icon: '🌿',
+      color: 'green',
+      items: [
+        { id: 'ch_2_1', no: '1.2.1', label: 'Lokasi pos (kemiringan lereng)', options: ['Berada pada kemiringan relatif datar dan tanah stabil','Berada pada kemiringan relatif datar tapi tanah kurang stabil','Berada pada kemiringan agak curam'] },
+        { id: 'ch_2_2', no: '1.2.2', label: 'Jarak antar pos', options: ['>3 Km','2–3 Km','<2 Km'] },
+        { id: 'ch_2_3', no: '1.2.3', label: 'Lokasi pos (terhadap keramaian)', options: ['Jauh dari keramaian','Dekat dengan keramaian'] },
+        { id: 'ch_2_4', no: '1.2.4', label: 'Jarak dari Pohon/ Rumah/ Bangunan', options: ['Tidak terdapat pohon dan atau rumah pada jarak ≤10 m','Terdapat sedikit pohon dan atau rumah yang tidak terlalu tinggi pada jarak ≤10 m','Banyak terdapat pohon dan atau rumah pada jarak ≤10 m'] },
+        { id: 'ch_2_5', no: '1.2.5', label: 'Kondisi kebersihan', options: ['Tidak terdapat semak belukar','Terdapat semak belukar tapi tidak terlalu tinggi (≤1.2 m)','Terdapat semak belukar yang tinggi (>1.2 m)'] },
+      ]
+    },
+    {
+      section: '1. QC 1 HUJAN MANUAL KRAN',
+      sub: '1.3. Pengamat (Pos Hujan Manual)',
+      icon: '👤',
+      color: 'purple',
+      items: [
+        { id: 'ch_3_1', no: '1.3.1', label: 'Pembacaan', options: ['Baik dan benar','Kurang cermat','Tidak cermat/ tidak di baca'] },
+        { id: 'ch_3_2', no: '1.3.2', label: 'Pemilihan Gelas Ukur', options: ['Baik dan benar','Benar tapi sudah rusak','Salah/ Tidak baik'] },
+        { id: 'ch_3_3', no: '1.3.3', label: 'Pencatatan hasil pembacaan', options: ['Benar seperti yang seharusnya pada hari yang sesuai','Pada hari tertentu tidak dilakukan pencatatan','Tidak dicatat pada hari yang seharusnya'] },
+        { id: 'ch_3_4', no: '1.3.4', label: 'Kerajinan Pencatatan', options: ['Dilakukan jam 7 pagi setiap hari','Dilakukan jam 7 pagi di hanya saat hari hujan','Jarang dilakukan'] },
+      ]
+    }
+  ],
+
+  // ── POS DUGA AIR ──────────────────────────────────────────
+  'Pos Duga Air Manual': [
+    {
+      section: '1. QC 1 KONDISI POS DUGA AIR (PELSKAL)',
+      sub: '1.1. Kesesuaian Lokasi Pos',
+      icon: '🌊',
+      color: 'blue',
+      items: [
+        { id: 'da_1_1',  no: '1.1.1',  label: 'Lokasi pos',
+          options: ['Lokasi pada alur sungai yang lurus ± 100 m atau 4×lebar sungai','Lokasi pada alur sungai yang lurus tetapi kurang dari 100 m atau 4×lebar sungai','Lokasi pada alur sungai yang lurus < 50 m atau kurang dari 2×lebar sungai atau terletak pada belokan'] },
+        { id: 'da_1_2',  no: '1.1.2',  label: 'Kondisi alur sungai',
+          options: ['Stabil','Kurang Stabil. Pada MA rendah tidak stabil dan atau pada MA banjir melimpah','Tidak Stabil'] },
+        { id: 'da_1_3',  no: '1.1.3',  label: 'Kondisi aliran pada pos duga air',
+          options: ['Aliran merata / tidak beriak','Sedikit beriak','Tidak merata dan beriak'] },
+        { id: 'da_1_4',  no: '1.1.4',  label: 'Tingkat penggerusan/ pengendapan',
+          options: ['Tidak terjadi','Terjadi bila banjir besar','Berat'] },
+        { id: 'da_1_5',  no: '1.1.5',  label: 'Pengaruh back water',
+          options: ['Tidak ada','Pada aliran tertentu terjadi backwater karena bendung, atau pertemuan sungai, atau pasang air laut','Terpengaruh'] },
+        { id: 'da_1_6',  no: '1.1.6',  label: 'Jangkauan/Pencapaian ke Lokasi Pos Duga Air',
+          options: ['Mudah','Sedang','Sulit'] },
+        { id: 'da_1_7',  no: '1.1.7',  label: 'Penampang kendali',
+          options: ['Ada penampang kendali alami','Ada penampang kendali buatan','Tidak ada'] },
+        { id: 'da_1_8',  no: '1.1.8',  label: 'Lokasi pengukuran',
+          options: ['Memenuhi syarat. Pengukuran debit dilakukan pada lokasi relatif tetap.','Pengukuran pada MA rendah atau tinggi sering berpindah tempat','Tidak memenuhi syarat. Lokasi pengukuran debit selalu berpindah'] },
+        { id: 'da_1_9',  no: '1.1.9',  label: 'Kondisi kebersihan sekitar lokasi pengukuran',
+          options: ['Relatif bersih','Kurang bersih','Sangat kotor (tempat pembuangan kotoran hewan, atau limbah pabrik, atau limbah domestik)'] },
+        { id: 'da_1_10', no: '1.1.10', label: 'Material dasar sungai',
+          options: ['Batuan kompak (cadas)','Pasir, Lumpur dan Krikil','Sebagian besar batuan bolder'] },
+        { id: 'da_1_11', no: '1.1.11', label: 'Pengambilan material sungai di sekitar pos',
+          options: ['Tidak ada','Ada (pengaruhnya kecil)','Ada (pengaruhnya besar)'] },
+        { id: 'da_1_12', no: '1.1.12', label: 'Sarana pengukuran debit banjir',
+          options: ['Ada (sebutkan..)','Ada, tetapi cukup jauh','Tidak ada'],
+          note: true },
+        { id: 'da_1_13', no: '1.1.13', label: 'Jarak Rumah Pengamat dengan Pos Duga Air',
+          options: ['< 1 Km','1–3 Km','> 3 Km'] },
+      ]
+    },
+    {
+      section: '1. QC 1 KONDISI POS DUGA AIR (PELSKAL)',
+      sub: '1.2. Kondisi Pos Dan Bangunan',
+      icon: '🏗',
+      color: 'teal',
+      items: [
+        { id: 'da_2_1', no: '1.2.1', label: 'Kondisi tanah pada lokasi bangunan pos duga air',
+          options: ['Stabil','Kurang stabil','Tidak stabil'] },
+        { id: 'da_2_2', no: '1.2.2', label: 'Kondisi bangunan',
+          options: ['Baik (kokoh)','Satu atau dua item berikut tidak baik (kokoh, tidak ada yang tergerus, tidak miring, atap baik, tangga baik)','Lebih dari 3 item berikut tidak baik (kokoh, tidak ada yang tergerus, tidak miring, atap dan tangga baik)'] },
+        { id: 'da_2_3', no: '1.2.3', label: 'Keberadaan Tangga untuk pembacaan pelskal',
+          options: ['Tidak Perlu, atau perlu dan kondisinya baik','Perlu, ada dan kondisinya kurang baik','Perlu tetapi tidak ada, atau ada tetapi kondisinya tidak baik'] },
+        { id: 'da_2_4', no: '1.2.4', label: 'Perawatan Pos',
+          options: ['Terawat dengan baik','Kurang terawat, beberapa bagian ada yang rusak','Tidak terawat'] },
+        { id: 'da_2_5', no: '1.2.5', label: 'BM (Bench Mark) atau titik tetap sementara',
+          options: ['Tersedia dan kondisinya baik dan memenuhi syarat','Tersedia tetapi kondisinya kurang baik','Tersedia tetapi kondisinya tidak baik, atau tidak tersedia'] },
+        { id: 'da_2_6', no: '1.2.6', label: 'Nol pelskal sudah dikaitkan dengan BM',
+          options: ['Sudah','Belum'] },
+        { id: 'da_2_7', no: '1.2.7', label: 'Kebersihan sekitar pos',
+          options: ['Bersih','Kurang bersih','Sangat kotor'] },
+        { id: 'da_2_8', no: '1.2.8', label: 'Logbook pos',
+          options: ['Ada dan dicatat dengan baik (berfungsi baik)','Ada tetapi tidak dicatat dengan baik','Ada, tetapi tidak dicatat atau tidak ada log book'] },
+      ]
+    },
+    {
+      section: '1. QC 1 KONDISI POS DUGA AIR (PELSKAL)',
+      sub: '1.3. Kinerja Alat',
+      icon: '⚙️',
+      color: 'yellow',
+      items: [
+        { id: 'da_3_1', no: '1.3.1', label: 'Jenis alat',
+          options: ['Telemetri','Otomatik','Pelskal'] },
+        { id: 'da_3_2', no: '1.3.2', label: 'Kondisi pelskal',
+          options: ['Dapat terbaca dengan baik','Tidak terbaca/rusak pada MA tertentu. Misalnya pada MA rendah','Tidak terbaca sama sekali karena rusak, atau tidak ada (baca MA dengan cara dicolok)'] },
+        { id: 'da_3_3', no: '1.3.3', label: 'Pembacaan pelskal',
+          options: ['Mudah','Mudah, tetapi pada MA tertentu sulit dibaca. Misalnya pada MA rendah, aliran berpindah sehingga MA tidak terbaca di alat, atau alat menggantung','Sulit, pengamat harus turun ke sungai untuk membaca, atau pengamat harus ke seberang pos untuk dapat membaca pelskal pada saat banjir, atau aliran selalu berubah setiap terjadi banjir, atau pada saat banjir aliran melimpah'] },
+        { id: 'da_3_4', no: '1.3.4', label: 'Logbook alat',
+          options: ['Ada dan berfungsi dengan baik, artinya setiap ada perbaikan, perubahan-perubahan, kontrol selalu dicacat','Ada tetapi kurang berfungsi dengan baik, tidak semua tercatat dengan baik. Artinya perbaikan-perbaikan, perubahan-perubahan, kontrol tidak selalu dicacat','Tidak ada'] },
+        { id: 'da_3_5', no: '1.3.5', label: 'Suku cadang : pelskal cadangan',
+          options: ['Ada dan lengkap','Ada tetapi kurang lengkap','Tidak ada'] },
+      ]
+    },
+    {
+      section: '1. QC 1 KONDISI POS DUGA AIR (PELSKAL)',
+      sub: '1.4. Kinerja Pengamat',
+      icon: '👤',
+      color: 'purple',
+      items: [
+        { id: 'da_4_1', no: '1.4.1', label: 'Integritas (disiplin, jujur, dan loyal)',
+          options: ['Ya','Sedang','Kurang'] },
+        { id: 'da_4_2', no: '1.4.2', label: 'Mencatat data, kejadian penting, dan kerusakan alat pada form',
+          options: ['Ya','Mencatat data MA dan kejadian penting atau mencatat data dan kerusakan alat','Hanya mencatat data MA saja'] },
+        { id: 'da_4_3', no: '1.4.3', label: 'Kemampuan mengoperasikan pos?',
+          options: ['Mampu','Kurang mampu','Tidak mampu'] },
+        { id: 'da_4_4', no: '1.4.4', label: 'Kelengkapan peralatan untuk pengamat',
+          options: ['Ada','Ada dan tidak lengkap','Tidak ada'] },
+        { id: 'da_4_5', no: '1.4.5', label: 'Pengarsipan data muka air',
+          options: ['Tersimpan baik, mudah dicari, dibuat barchart','Tersimpan dengan baik, mudah dicari','Belum tertata'] },
+        { id: 'da_4_6', no: '1.4.6', label: 'Inisiatif mandor melaporkan kerusakan pelskal',
+          options: ['Ya','Kadang - Kadang','Tidak pernah'] },
+      ]
+    }
+  ],
+
+  'AWLR (Automatic Water Level Recorder)': [
+    {
+      section: '1. QC 1 KONDISI POS DUGA AIR (PELSKAL)',
+      sub: '1.1. Kesesuaian Lokasi Pos',
+      icon: '🌊',
+      color: 'blue',
+      items: [
+        { id: 'da_1_1',  no: '1.1.1',  label: 'Lokasi pos',
+          options: ['Lokasi pada alur sungai yang lurus ± 100 m atau 4×lebar sungai','Lokasi pada alur sungai yang lurus tetapi kurang dari 100 m atau 4×lebar sungai','Lokasi pada alur sungai yang lurus < 50 m atau kurang dari 2×lebar sungai atau terletak pada belokan'] },
+        { id: 'da_1_2',  no: '1.1.2',  label: 'Kondisi alur sungai',
+          options: ['Stabil','Kurang Stabil. Pada MA rendah tidak stabil dan atau pada MA banjir melimpah','Tidak Stabil'] },
+        { id: 'da_1_3',  no: '1.1.3',  label: 'Kondisi aliran pada pos duga air',
+          options: ['Aliran merata / tidak beriak','Sedikit beriak','Tidak merata dan beriak'] },
+        { id: 'da_1_4',  no: '1.1.4',  label: 'Tingkat penggerusan/ pengendapan',
+          options: ['Tidak terjadi','Terjadi bila banjir besar','Berat'] },
+        { id: 'da_1_5',  no: '1.1.5',  label: 'Pengaruh back water',
+          options: ['Tidak ada','Pada aliran tertentu terjadi backwater karena bendung, atau pertemuan sungai, atau pasang air laut','Terpengaruh'] },
+        { id: 'da_1_6',  no: '1.1.6',  label: 'Jangkauan/Pencapaian ke Lokasi Pos Duga Air',
+          options: ['Mudah','Sedang','Sulit'] },
+        { id: 'da_1_7',  no: '1.1.7',  label: 'Penampang kendali',
+          options: ['Ada penampang kendali alami','Ada penampang kendali buatan','Tidak ada'] },
+        { id: 'da_1_8',  no: '1.1.8',  label: 'Lokasi pengukuran',
+          options: ['Memenuhi syarat. Pengukuran debit dilakukan pada lokasi relatif tetap.','Pengukuran pada MA rendah atau tinggi sering berpindah tempat','Tidak memenuhi syarat. Lokasi pengukuran debit selalu berpindah'] },
+        { id: 'da_1_9',  no: '1.1.9',  label: 'Kondisi kebersihan sekitar lokasi pengukuran',
+          options: ['Relatif bersih','Kurang bersih','Sangat kotor (tempat pembuangan kotoran hewan, atau limbah pabrik, atau limbah domestik)'] },
+        { id: 'da_1_10', no: '1.1.10', label: 'Material dasar sungai',
+          options: ['Batuan kompak (cadas)','Pasir, Lumpur dan Krikil','Sebagian besar batuan bolder'] },
+        { id: 'da_1_11', no: '1.1.11', label: 'Pengambilan material sungai di sekitar pos',
+          options: ['Tidak ada','Ada (pengaruhnya kecil)','Ada (pengaruhnya besar)'] },
+        { id: 'da_1_12', no: '1.1.12', label: 'Sarana pengukuran debit banjir',
+          options: ['Ada (sebutkan..)','Ada, tetapi cukup jauh','Tidak ada'],
+          note: true },
+        { id: 'da_1_13', no: '1.1.13', label: 'Jarak Rumah Pengamat dengan Pos Duga Air',
+          options: ['< 1 Km','1–3 Km','> 3 Km'] },
+      ]
+    },
+    {
+      section: '1. QC 1 KONDISI POS DUGA AIR (PELSKAL)',
+      sub: '1.2. Kondisi Pos Dan Bangunan',
+      icon: '🏗',
+      color: 'teal',
+      items: [
+        { id: 'da_2_1', no: '1.2.1', label: 'Kondisi tanah pada lokasi bangunan pos duga air',
+          options: ['Stabil','Kurang stabil','Tidak stabil'] },
+        { id: 'da_2_2', no: '1.2.2', label: 'Kondisi bangunan',
+          options: ['Baik (kokoh)','Satu atau dua item berikut tidak baik (kokoh, tidak ada yang tergerus, tidak miring, atap baik, tangga baik)','Lebih dari 3 item berikut tidak baik (kokoh, tidak ada yang tergerus, tidak miring, atap dan tangga baik)'] },
+        { id: 'da_2_3', no: '1.2.3', label: 'Keberadaan Tangga untuk pembacaan pelskal',
+          options: ['Tidak Perlu, atau perlu dan kondisinya baik','Perlu, ada dan kondisinya kurang baik','Perlu tetapi tidak ada, atau ada tetapi kondisinya tidak baik'] },
+        { id: 'da_2_4', no: '1.2.4', label: 'Perawatan Pos',
+          options: ['Terawat dengan baik','Kurang terawat, beberapa bagian ada yang rusak','Tidak terawat'] },
+        { id: 'da_2_5', no: '1.2.5', label: 'BM (Bench Mark) atau titik tetap sementara',
+          options: ['Tersedia dan kondisinya baik dan memenuhi syarat','Tersedia tetapi kondisinya kurang baik','Tersedia tetapi kondisinya tidak baik, atau tidak tersedia'] },
+        { id: 'da_2_6', no: '1.2.6', label: 'Nol pelskal sudah dikaitkan dengan BM',
+          options: ['Sudah','Belum'] },
+        { id: 'da_2_7', no: '1.2.7', label: 'Kebersihan sekitar pos',
+          options: ['Bersih','Kurang bersih','Sangat kotor'] },
+        { id: 'da_2_8', no: '1.2.8', label: 'Logbook pos',
+          options: ['Ada dan dicatat dengan baik (berfungsi baik)','Ada tetapi tidak dicatat dengan baik','Ada, tetapi tidak dicatat atau tidak ada log book'] },
+      ]
+    },
+    {
+      section: '1. QC 1 KONDISI POS DUGA AIR (PELSKAL)',
+      sub: '1.3. Kinerja Alat',
+      icon: '⚙️',
+      color: 'yellow',
+      items: [
+        { id: 'da_3_1', no: '1.3.1', label: 'Jenis alat',
+          options: ['Telemetri','Otomatik','Pelskal'] },
+        { id: 'da_3_2', no: '1.3.2', label: 'Kondisi pelskal',
+          options: ['Dapat terbaca dengan baik','Tidak terbaca/rusak pada MA tertentu. Misalnya pada MA rendah','Tidak terbaca sama sekali karena rusak, atau tidak ada (baca MA dengan cara dicolok)'] },
+        { id: 'da_3_3', no: '1.3.3', label: 'Pembacaan pelskal',
+          options: ['Mudah','Mudah, tetapi pada MA tertentu sulit dibaca. Misalnya pada MA rendah, aliran berpindah sehingga MA tidak terbaca di alat, atau alat menggantung','Sulit, pengamat harus turun ke sungai untuk membaca, atau pengamat harus ke seberang pos untuk dapat membaca pelskal pada saat banjir, atau aliran selalu berubah setiap terjadi banjir, atau pada saat banjir aliran melimpah'] },
+        { id: 'da_3_4', no: '1.3.4', label: 'Logbook alat',
+          options: ['Ada dan berfungsi dengan baik, artinya setiap ada perbaikan, perubahan-perubahan, kontrol selalu dicacat','Ada tetapi kurang berfungsi dengan baik, tidak semua tercatat dengan baik. Artinya perbaikan-perbaikan, perubahan-perubahan, kontrol tidak selalu dicacat','Tidak ada'] },
+        { id: 'da_3_5', no: '1.3.5', label: 'Suku cadang : pelskal cadangan',
+          options: ['Ada dan lengkap','Ada tetapi kurang lengkap','Tidak ada'] },
+      ]
+    },
+    {
+      section: '1. QC 1 KONDISI POS DUGA AIR (PELSKAL)',
+      sub: '1.4. Kinerja Pengamat',
+      icon: '👤',
+      color: 'purple',
+      items: [
+        { id: 'da_4_1', no: '1.4.1', label: 'Integritas (disiplin, jujur, dan loyal)',
+          options: ['Ya','Sedang','Kurang'] },
+        { id: 'da_4_2', no: '1.4.2', label: 'Mencatat data, kejadian penting, dan kerusakan alat pada form',
+          options: ['Ya','Mencatat data MA dan kejadian penting atau mencatat data dan kerusakan alat','Hanya mencatat data MA saja'] },
+        { id: 'da_4_3', no: '1.4.3', label: 'Kemampuan mengoperasikan pos?',
+          options: ['Mampu','Kurang mampu','Tidak mampu'] },
+        { id: 'da_4_4', no: '1.4.4', label: 'Kelengkapan peralatan untuk pengamat',
+          options: ['Ada','Ada dan tidak lengkap','Tidak ada'] },
+        { id: 'da_4_5', no: '1.4.5', label: 'Pengarsipan data muka air',
+          options: ['Tersimpan baik, mudah dicari, dibuat barchart','Tersimpan dengan baik, mudah dicari','Belum tertata'] },
+        { id: 'da_4_6', no: '1.4.6', label: 'Inisiatif mandor melaporkan kerusakan pelskal',
+          options: ['Ya','Kadang - Kadang','Tidak pernah'] },
+      ]
+    }
+  ],
+
+  'AWLR + ARR': [
+    {
+      section: '1. QC 1 KONDISI POS DUGA AIR (PELSKAL)',
+      sub: '1.1. Kesesuaian Lokasi Pos',
+      icon: '🌊',
+      color: 'blue',
+      items: [
+        { id: 'da_1_1',  no: '1.1.1',  label: 'Lokasi pos',
+          options: ['Lokasi pada alur sungai yang lurus ± 100 m atau 4×lebar sungai','Lokasi pada alur sungai yang lurus tetapi kurang dari 100 m atau 4×lebar sungai','Lokasi pada alur sungai yang lurus < 50 m atau kurang dari 2×lebar sungai atau terletak pada belokan'] },
+        { id: 'da_1_2',  no: '1.1.2',  label: 'Kondisi alur sungai',
+          options: ['Stabil','Kurang Stabil. Pada MA rendah tidak stabil dan atau pada MA banjir melimpah','Tidak Stabil'] },
+        { id: 'da_1_3',  no: '1.1.3',  label: 'Kondisi aliran pada pos duga air',
+          options: ['Aliran merata / tidak beriak','Sedikit beriak','Tidak merata dan beriak'] },
+        { id: 'da_1_4',  no: '1.1.4',  label: 'Tingkat penggerusan/ pengendapan',
+          options: ['Tidak terjadi','Terjadi bila banjir besar','Berat'] },
+        { id: 'da_1_5',  no: '1.1.5',  label: 'Pengaruh back water',
+          options: ['Tidak ada','Pada aliran tertentu terjadi backwater karena bendung, atau pertemuan sungai, atau pasang air laut','Terpengaruh'] },
+        { id: 'da_1_6',  no: '1.1.6',  label: 'Jangkauan/Pencapaian ke Lokasi Pos Duga Air',
+          options: ['Mudah','Sedang','Sulit'] },
+        { id: 'da_1_7',  no: '1.1.7',  label: 'Penampang kendali',
+          options: ['Ada penampang kendali alami','Ada penampang kendali buatan','Tidak ada'] },
+        { id: 'da_1_8',  no: '1.1.8',  label: 'Lokasi pengukuran',
+          options: ['Memenuhi syarat. Pengukuran debit dilakukan pada lokasi relatif tetap.','Pengukuran pada MA rendah atau tinggi sering berpindah tempat','Tidak memenuhi syarat. Lokasi pengukuran debit selalu berpindah'] },
+        { id: 'da_1_9',  no: '1.1.9',  label: 'Kondisi kebersihan sekitar lokasi pengukuran',
+          options: ['Relatif bersih','Kurang bersih','Sangat kotor (tempat pembuangan kotoran hewan, atau limbah pabrik, atau limbah domestik)'] },
+        { id: 'da_1_10', no: '1.1.10', label: 'Material dasar sungai',
+          options: ['Batuan kompak (cadas)','Pasir, Lumpur dan Krikil','Sebagian besar batuan bolder'] },
+        { id: 'da_1_11', no: '1.1.11', label: 'Pengambilan material sungai di sekitar pos',
+          options: ['Tidak ada','Ada (pengaruhnya kecil)','Ada (pengaruhnya besar)'] },
+        { id: 'da_1_12', no: '1.1.12', label: 'Sarana pengukuran debit banjir',
+          options: ['Ada (sebutkan..)','Ada, tetapi cukup jauh','Tidak ada'],
+          note: true },
+        { id: 'da_1_13', no: '1.1.13', label: 'Jarak Rumah Pengamat dengan Pos Duga Air',
+          options: ['< 1 Km','1–3 Km','> 3 Km'] },
+      ]
+    },
+    {
+      section: '1. QC 1 KONDISI POS DUGA AIR (PELSKAL)',
+      sub: '1.2. Kondisi Pos Dan Bangunan',
+      icon: '🏗',
+      color: 'teal',
+      items: [
+        { id: 'da_2_1', no: '1.2.1', label: 'Kondisi tanah pada lokasi bangunan pos duga air',
+          options: ['Stabil','Kurang stabil','Tidak stabil'] },
+        { id: 'da_2_2', no: '1.2.2', label: 'Kondisi bangunan',
+          options: ['Baik (kokoh)','Satu atau dua item berikut tidak baik (kokoh, tidak ada yang tergerus, tidak miring, atap baik, tangga baik)','Lebih dari 3 item berikut tidak baik (kokoh, tidak ada yang tergerus, tidak miring, atap dan tangga baik)'] },
+        { id: 'da_2_3', no: '1.2.3', label: 'Keberadaan Tangga untuk pembacaan pelskal',
+          options: ['Tidak Perlu, atau perlu dan kondisinya baik','Perlu, ada dan kondisinya kurang baik','Perlu tetapi tidak ada, atau ada tetapi kondisinya tidak baik'] },
+        { id: 'da_2_4', no: '1.2.4', label: 'Perawatan Pos',
+          options: ['Terawat dengan baik','Kurang terawat, beberapa bagian ada yang rusak','Tidak terawat'] },
+        { id: 'da_2_5', no: '1.2.5', label: 'BM (Bench Mark) atau titik tetap sementara',
+          options: ['Tersedia dan kondisinya baik dan memenuhi syarat','Tersedia tetapi kondisinya kurang baik','Tersedia tetapi kondisinya tidak baik, atau tidak tersedia'] },
+        { id: 'da_2_6', no: '1.2.6', label: 'Nol pelskal sudah dikaitkan dengan BM',
+          options: ['Sudah','Belum'] },
+        { id: 'da_2_7', no: '1.2.7', label: 'Kebersihan sekitar pos',
+          options: ['Bersih','Kurang bersih','Sangat kotor'] },
+        { id: 'da_2_8', no: '1.2.8', label: 'Logbook pos',
+          options: ['Ada dan dicatat dengan baik (berfungsi baik)','Ada tetapi tidak dicatat dengan baik','Ada, tetapi tidak dicatat atau tidak ada log book'] },
+      ]
+    },
+    {
+      section: '1. QC 1 KONDISI POS DUGA AIR (PELSKAL)',
+      sub: '1.3. Kinerja Alat',
+      icon: '⚙️',
+      color: 'yellow',
+      items: [
+        { id: 'da_3_1', no: '1.3.1', label: 'Jenis alat',
+          options: ['Telemetri','Otomatik','Pelskal'] },
+        { id: 'da_3_2', no: '1.3.2', label: 'Kondisi pelskal',
+          options: ['Dapat terbaca dengan baik','Tidak terbaca/rusak pada MA tertentu. Misalnya pada MA rendah','Tidak terbaca sama sekali karena rusak, atau tidak ada (baca MA dengan cara dicolok)'] },
+        { id: 'da_3_3', no: '1.3.3', label: 'Pembacaan pelskal',
+          options: ['Mudah','Mudah, tetapi pada MA tertentu sulit dibaca. Misalnya pada MA rendah, aliran berpindah sehingga MA tidak terbaca di alat, atau alat menggantung','Sulit, pengamat harus turun ke sungai untuk membaca, atau pengamat harus ke seberang pos untuk dapat membaca pelskal pada saat banjir, atau aliran selalu berubah setiap terjadi banjir, atau pada saat banjir aliran melimpah'] },
+        { id: 'da_3_4', no: '1.3.4', label: 'Logbook alat',
+          options: ['Ada dan berfungsi dengan baik, artinya setiap ada perbaikan, perubahan-perubahan, kontrol selalu dicacat','Ada tetapi kurang berfungsi dengan baik, tidak semua tercatat dengan baik. Artinya perbaikan-perbaikan, perubahan-perubahan, kontrol tidak selalu dicacat','Tidak ada'] },
+        { id: 'da_3_5', no: '1.3.5', label: 'Suku cadang : pelskal cadangan',
+          options: ['Ada dan lengkap','Ada tetapi kurang lengkap','Tidak ada'] },
+      ]
+    },
+    {
+      section: '1. QC 1 KONDISI POS DUGA AIR (PELSKAL)',
+      sub: '1.4. Kinerja Pengamat',
+      icon: '👤',
+      color: 'purple',
+      items: [
+        { id: 'da_4_1', no: '1.4.1', label: 'Integritas (disiplin, jujur, dan loyal)',
+          options: ['Ya','Sedang','Kurang'] },
+        { id: 'da_4_2', no: '1.4.2', label: 'Mencatat data, kejadian penting, dan kerusakan alat pada form',
+          options: ['Ya','Mencatat data MA dan kejadian penting atau mencatat data dan kerusakan alat','Hanya mencatat data MA saja'] },
+        { id: 'da_4_3', no: '1.4.3', label: 'Kemampuan mengoperasikan pos?',
+          options: ['Mampu','Kurang mampu','Tidak mampu'] },
+        { id: 'da_4_4', no: '1.4.4', label: 'Kelengkapan peralatan untuk pengamat',
+          options: ['Ada','Ada dan tidak lengkap','Tidak ada'] },
+        { id: 'da_4_5', no: '1.4.5', label: 'Pengarsipan data muka air',
+          options: ['Tersimpan baik, mudah dicari, dibuat barchart','Tersimpan dengan baik, mudah dicari','Belum tertata'] },
+        { id: 'da_4_6', no: '1.4.6', label: 'Inisiatif mandor melaporkan kerusakan pelskal',
+          options: ['Ya','Kadang - Kadang','Tidak pernah'] },
+      ]
+    }
+  ]
+
+  // ── POS KLIMATOLOGI ───────────────────────────────────────
+  ,
+  'Pos Klimatologi': [
+    {
+      section: '1. QC 1 KLIMATOLOGI',
+      sub: '1.1. QC 1 Kondisi Dan Kesesuaian Pos Klimatologi',
+      icon: '🌤',
+      color: 'teal',
+      items: [
+        { id: 'ik_1_1', no: '1.1.1', label: 'Jarak Pos terhadap penghalang bangunan/Pohon-minimal standar 10h (10 kali ketinggian penghalang)',
+          options: [
+            'Penghalang bangunan dan pohon berada pada jarak posisi diluar batas radius yang diijinkan standar 10h (h=tinggi bangunan atau pohon)',
+            'Penghalang bangunan dan pohon berada pada posisi jarak didalam batas radius standar 10h (h=tinggi bangunan atau pohon), tetapi tidak menggangu peralatan',
+            'Penghalang bangunan/ pohon berada terlalu dekat bahkan sangat dekat sekali dengan Pos dan menggangu kinerja peralatan serta dikhawatirkan sebagai penyebab anomali data'
+          ] },
+        { id: 'ik_1_2', no: '1.1.2', label: 'Ukuran Lingkungan Pos-Standar minimal 6×10 meter persegi',
+          options: [
+            'Ukuran pos klimatologi lengkap minimal 6×10 meter persegi',
+            'Pos klimatologi tidak lengkap minimal 2×4 meter persegi atau seluas minimal pos klimatologi telemetering',
+            'Terlalu luas atau terlalu kecil (sepanjang mengganggu kinerja peralatan serta monitoring data iklim)'
+          ] },
+        { id: 'ik_1_3', no: '1.1.3', label: 'Jumlah Peralatan Klimatologi',
+          options: [
+            'Minimal Terdapat 4 Peralatan Iklim (Suhu, Kecepatan Angin, Sunshine Recorder, Kelembaban)',
+            'Terdapat 3 sampai dengan 1 peralatan iklim',
+            'Semua peralatan dalam kondisi tidak berfungsi dengan baik'
+          ] },
+        { id: 'ik_1_4', no: '1.1.4', label: 'Kerapatan Antar Alat (sesuai pedoman Pd M-19-1995-03)',
+          options: [
+            'Kerapatan antar alat sesuai dengan pedoman Pd M-19-1995-03',
+            'Kerapatan alat tidak memenuhi kriteria pedoman namun disesuaikan dengan skala ukuran minimal pos klimatologi (2×4 meter)',
+            'Jarak antar alat terlalu dekat'
+          ] },
+        { id: 'ik_1_5', no: '1.1.5', label: 'Posisi Lokasi Pos Klimatologi Terhadap Posisi Rumah Operator Pengamat Lapangan',
+          options: ['Dekat dan mudah dijangkau','Cukup Jauh dan mudah dijangkau','Jauh dan medan sulit dijangkau'] },
+        { id: 'ik_1_6', no: '1.1.6', label: 'Kebersihan Pos Klimatologi',
+          options: ['Relatif bersih','Kurang bersih','Tidak terawat'] },
+        { id: 'ik_1_7', no: '1.1.7', label: 'Kartu Pembangunan Pos Klimatologi',
+          options: ['Ada, terawat dan berada di lokasi stasiun','Ada, tidak terawat dan atau tidak berada di lokasi stasiun','Tidak ada'] },
+        { id: 'ik_1_8', no: '1.1.8', label: 'Informasi Data Pos Secara Administrasi & DAS',
+          options: ['Informasi lengkap meliputi data secara administrasi dan DAS','Hanya salah satu informasi Administrasi atau DAS','Tidak ada informasi sama sekali'] },
+        { id: 'ik_1_9', no: '1.1.9', label: 'Keamanan Vandalisme',
+          options: ['Aman dari vandalisme','Cenderung mengundang ketidak-aman-an dari vandalisme','Tidak aman dari vandalisme'] },
+        { id: 'ik_1_10', no: '1.1.10', label: 'Kondisi Pagar Sekeliling Pos',
+          options: [
+            'Pagar mengelilingi lingkungan pos, fondasi tiang pagar terawat, pintu dapat dibuka tutup dengan mudah dan dipasang kunci yang mudah dibuka dan ditutup, pagar dapat melewatkan hembusan aliran angin, dapat mencegah hewan/unggas masuk, dapat mencegah sementara sikap vandalisme',
+            'Ada bagian/sebahagian pagar yang rusak/ hancur berkarat, fondasi rusak sehingga tiang pagar mulai roboh, pintu sulit dibuka tutup dan tidak terpasang kunci atau terpasang kunci yang sulit dibuka ditutup, pagar permanen kurang mengalirkan hembusan angin, tidak dapat mencegah hewan/unggas masuk, cenderung mengundang sikap vandalisme',
+            'Tidak ada pagar'
+          ] },
+        { id: 'ik_1_11', no: '1.1.11', label: 'Fasilitas Penangkal - Penangkap - Pengukur intensitas petir',
+          options: ['Ada, lengkap, terawat dan berfungsi','Ada, tidak lengkap, tidak terawat dan sebagian berfungsi','Tidak ada'] },
+        { id: 'ik_1_12', no: '1.1.12', label: 'Catu daya listrik (Power Supply)',
+          options: [
+            'Ada (baterai kering, UPS, solar Cell, dekat PLN, Genset kecil)',
+            'Ada tetapi hanya salah satu dari baterai kering, UPS, solar Cell, dekat PLN, Genset kecil',
+            'Tidak ada'
+          ] },
+        { id: 'ik_1_13', no: '1.1.13', label: 'Fasilitas Telekomunikasi (Radio-telepon-internet)',
+          options: ['Ada lengkap','Hanya ada salah satu saja','Tidak ada'] },
+      ]
+    },
+    {
+      section: '1. QC 1 KLIMATOLOGI',
+      sub: '1.2. Kondisi Peralatan Klimatologi › 1.2.1.1 Termometer Maksimum',
+      icon: '🌡',
+      color: 'yellow',
+      items: [
+        { id: 'ik_2_1_1_1', no: '1.2.1.1.1', label: 'Angka pada Termometer',
+          options: [
+            'Terbaca dengan jelas',
+            'Tulisan angka tersamar-samar',
+            'Tulisan angka pudar (tidak terbaca sama sekali)/ tidak ada alat'
+          ] },
+        { id: 'ik_2_1_1_2', no: '1.2.1.1.2', label: 'Pemasangan alat',
+          options: [
+            'Sedikit miring (dengan sudut 2.5o-5o) untuk psychometer biasa, jika otomatis boleh tidak miring',
+            'Posisi mendatar',
+            'Posisi terlalu miring/ tidak ada alat'
+          ] },
+        { id: 'ik_2_1_1_3', no: '1.2.1.1.3', label: 'Kondisi air raksa',
+          options: [
+            'Air raksa bekerja dan terkalibrasi dengan baik (2 tahun terakhir)',
+            'Terdapat gelembung udara di air raksa (terkalibrasi (2 - 5 tahun terakhir)',
+            'Air raksa tidak bekerja dengan baik (> 5 tahun terakhir atau tidak pernah dikalibrasi)/ tidak ada alat'
+          ] },
+      ]
+    },
+    {
+      section: '1. QC 1 KLIMATOLOGI',
+      sub: '1.2. Kondisi Peralatan Klimatologi › 1.2.1.2 Termometer Minimum',
+      icon: '🌡',
+      color: 'yellow',
+      items: [
+        { id: 'ik_2_1_2_1', no: '1.2.1.2.1', label: 'Angka pada Termometer',
+          options: [
+            'Terbaca dengan jelas',
+            'Tulisan angka tersamar-samar',
+            'Tulisan angka pudar (tidak terbaca sama sekali)/ tidak ada alat'
+          ] },
+        { id: 'ik_2_1_2_2', no: '1.2.1.2.2', label: 'Pemasangan alat',
+          options: [
+            'Posisi mendatar',
+            'Sedikit miring',
+            'Posisi terlalu miring/ tidak ada alat'
+          ] },
+        { id: 'ik_2_1_2_3', no: '1.2.1.2.3', label: 'Kondisi air alkohol',
+          options: [
+            'Air alkohol bekerja dan terkalibrasi dengan baik (2 tahun terakhir)',
+            'Terdapat gelembung udara di air alkohol (terkalibrasi (2 - 5 tahun terakhir)',
+            'Air alkohol tidak bekerja dengan baik (> 5 tahun terakhir atau tidak pernah dikalibrasi)/ tidak ada alat'
+          ] },
+      ]
+    },
+    {
+      section: '1. QC 1 KLIMATOLOGI',
+      sub: '1.2. Kondisi Peralatan Klimatologi › 1.2.2.1.1 Termometer Bola Basah (Pengukur RH)',
+      icon: '💧',
+      color: 'blue',
+      items: [
+        { id: 'ik_2_2_1_1_1', no: '1.2.2.1.1.1', label: 'Angka pada termometer',
+          options: ['Terbaca dengan jelas','Tulisan angka tersamar-samar','Tulisan angka pudar (tidak terbaca sama sekali)/ tidak ada alat'] },
+        { id: 'ik_2_2_1_1_2', no: '1.2.2.1.1.2', label: 'Ujung sensor',
+          options: ['Selalu dalam kondisi saturated','Kain di ujung sensor tidak selalu dalam kondisi saturated (pengamat lupa memberi air pada kain)','Kain di ujung sensor dalam kondisi kering/ tidak ada alat'] },
+        { id: 'ik_2_2_1_1_3', no: '1.2.2.1.1.3', label: 'Kondisi air alkohol',
+          options: ['Air alkohol bekerja dan terkalibrasi dengan baik (2 tahun terakhir)','Terdapat gelembung udara di air alkohol (terkalibrasi (2 - 5 tahun terakhir)','Air alkohol tidak bekerja dengan baik (> 5 tahun terakhir atau tidak pernah dikalibrasi)/ tidak ada alat'] },
+        { id: 'ik_2_2_1_1_4', no: '1.2.2.1.1.4', label: 'Posisi termometer',
+          options: ['Tegak lurus','Tidak tegak lurus/ tidak ada alat'] },
+      ]
+    },
+    {
+      section: '1. QC 1 KLIMATOLOGI',
+      sub: '1.2. Kondisi Peralatan Klimatologi › 1.2.2.1.2 Termometer Bola Kering',
+      icon: '🌡',
+      color: 'yellow',
+      items: [
+        { id: 'ik_2_2_1_2_1', no: '1.2.2.1.2.1', label: 'Angka pada Termometer',
+          options: ['Terbaca dengan jelas','Tulisan angka tersamar-samar','Tulisan angka pudar (tidak terbaca sama sekali)/ tidak ada alat'] },
+        { id: 'ik_2_2_1_2_2', no: '1.2.2.1.2.2', label: 'Kondisi air raksa',
+          options: ['Air raksa bekerja dan terkalibrasi dengan baik (2 tahun terakhir)','Terdapat gelembung udara di air raksa (terkalibrasi (2 - 5 tahun terakhir)','Air raksa tidak bekerja dengan baik (> 5 tahun terakhir atau tidak pernah dikalibrasi)/ tidak ada alat'] },
+        { id: 'ik_2_2_1_2_3', no: '1.2.2.1.2.3', label: 'Posisi termometer',
+          options: ['Tegak lurus','Tidak tegak lurus/ tidak ada alat'] },
+      ]
+    },
+    {
+      section: '1. QC 1 KLIMATOLOGI',
+      sub: '1.2. Kondisi Peralatan Klimatologi › 1.2.4.1 Campbell Stokes (Lama Penyinaran)',
+      icon: '☀️',
+      color: 'yellow',
+      items: [
+        { id: 'ik_2_4_1_1', no: '1.2.4.1.1', label: 'Posisi kedudukan alat',
+          options: [
+            'Pemasangan dudukan dengan nipo dilakukan dengan benar',
+            'Pemasangan dudukan dengan nipo tidak dilakukan dengan benar/ tidak ada alat'
+          ] },
+        { id: 'ik_2_4_1_2', no: '1.2.4.1.2', label: 'Posisi arah alat',
+          options: [
+            'Arah alat (utara-selatan) dan posisi (derajat lintang-bujur) sesuai dengan posisi pos klimatologi sebenarnya',
+            'Arah alat (utara-selatan) dan posisi (derajat lintang-bujur) kurang tepat dengan posisi pos klimatologi sebenarnya./ tidak ada alat'
+          ] },
+        { id: 'ik_2_4_1_3', no: '1.2.4.1.3', label: 'Pemasangan kertas pias',
+          options: [
+            'Pemasangan pias disesuaikan dari waktu ke waktu (disesuaikan dengan posisi belahan bumi, waktu dan bulan). Pelaksanaan pengukuran pias konsisten pada rentang jam yang sama.',
+            'Pemasangan pias disesuaikan dari waktu ke waktu (disesuaikan dengan posisi belahan bumi, waktu dan bulan) namun masih menghasilkan pembakaran pias yang tidak sesuai dengan garis bakar pias.',
+            'Pemasangan pias terkadang tidak disesuaikan dari waktu ke waktu (disesuaikan dengan posisi belahan bumi, waktu dan bulan)/ tidak ada alat'
+          ] },
+        { id: 'ik_2_4_1_4', no: '1.2.4.1.4', label: 'Kondisi bola gelas',
+          options: [
+            'Bersih dan menerima cahaya matahari dengan baik',
+            'Bola gelas sedikit tertutup dengan jamur',
+            'Bola gelas secara keseluruhan tertutup dengan kotoran/ tidak ada alat'
+          ] },
+      ]
+    },
+    {
+      section: '1. QC 1 KLIMATOLOGI',
+      sub: '1.2. Kondisi Peralatan Klimatologi › 1.2.5.1 Anemometer (2 Meter di Atas Tanah)',
+      icon: '💨',
+      color: 'teal',
+      items: [
+        { id: 'ik_2_5_1_1', no: '1.2.5.1.1', label: 'Kondisi cup angin',
+          options: ['Dalam kondisi baik dan tidak karatan','Dalam kondisi tidak baik (bentuk cup tidak sempurna)/ tidak ada alat'] },
+        { id: 'ik_2_5_1_2', no: '1.2.5.1.2', label: 'Kondisi counter speedometer',
+          options: ['Bergerak lancar','Bergerak tersendat-sendat/ tidak ada alat'] },
+        { id: 'ik_2_5_1_3', no: '1.2.5.1.3', label: 'Apakah alat terkalibrasi?',
+          options: ['Ya, 2 tahun terakhir','Ya, 2–5 tahun terakhir','> 5 tahun terakhir atau tidak dikalibrasi/ tidak ada alat'] },
+        { id: 'ik_2_5_1_4', no: '1.2.5.1.4', label: 'Putaran as cup',
+          options: ['Bergerak lancar','Bergerak tersendat-sendat/ tidak ada alat'] },
+      ]
+    },
+    {
+      section: '1. QC 1 KLIMATOLOGI',
+      sub: '1.2. Kondisi Peralatan Klimatologi › 1.2.6.1.1 Panci Tipe A (Pengukur Evaporasi)',
+      icon: '🫙',
+      color: 'blue',
+      items: [
+        { id: 'ik_2_6_1_1_1', no: '1.2.6.1.1.1', label: 'Kondisi panci',
+          options: ['Tidak karatan, bebas dari kotoran dan cat berwarna silver','Karatan dan sedikit terdapat kotoran dan cat selain silver','Karatan dan sangat kotor dan cat selain silver/ tidak ada alat'] },
+        { id: 'ik_2_6_1_1_2', no: '1.2.6.1.1.2', label: 'Dudukan panci',
+          options: ['Rata, kondisinya baik, cat berwarna putih','Rata, tetapi dalam kondisi kropos dan cat selain putih','Tidak rata dan cat selain putih/ tidak ada alat'] },
+        { id: 'ik_2_6_1_1_3', no: '1.2.6.1.1.3', label: 'Jenis material dibawah dudukan panci',
+          options: ['Rumput','Tanah','Beton/ tidak ada alat'] },
+        { id: 'ik_2_6_1_1_4', no: '1.2.6.1.1.4', label: 'Terdapat termometer apung?',
+          options: ['Ya','Tidak/ tidak ada alat'] },
+      ]
+    },
+    {
+      section: '1. QC 1 KLIMATOLOGI',
+      sub: '1.2. Kondisi Peralatan Klimatologi › 1.2.6.1.2 Termometer Apung (Maks & Min)',
+      icon: '🌡',
+      color: 'yellow',
+      items: [
+        { id: 'ik_2_6_1_2_1', no: '1.2.6.1.2.1', label: 'Angka pada Termometer',
+          options: ['Terbaca dengan jelas','Tulisan angka tersamar-samar','Tulisan angka pudar (tidak terbaca sama sekali)/ tidak ada alat'] },
+        { id: 'ik_2_6_1_2_2', no: '1.2.6.1.2.2', label: 'Pemasangan alat',
+          options: ['Dalam kondisi terapung dengan baik','Sedikit tenggelam','Tidak ada alat'] },
+        { id: 'ik_2_6_1_2_3', no: '1.2.6.1.2.3', label: 'Apakah tersedia magnet',
+          options: ['Tersedia','Tidak tersedia/ tidak ada alat'] },
+        { id: 'ik_2_6_1_2_4', no: '1.2.6.1.2.4', label: 'Kondisi air raksa',
+          options: ['Air raksa bekerja dengan baik','Terdapat gelembung udara di air raksa','Air raksa tidak bekerja dengan baik/ tidak ada alat'] },
+      ]
+    },
+    {
+      section: '1. QC 1 KLIMATOLOGI',
+      sub: '1.2. Kondisi Peralatan Klimatologi › 1.2.6.1.3 Hook Gauge',
+      icon: '📏',
+      color: 'green',
+      items: [
+        { id: 'ik_2_6_1_3_1', no: '1.2.6.1.3.1', label: 'Kebersihan tabung skala',
+          options: ['Bersih','Tidak bersih/ tidak ada alat'] },
+        { id: 'ik_2_6_1_3_2', no: '1.2.6.1.3.2', label: 'Skala pada hook/ wadah bervolune/ mistar',
+          options: ['Skala jelas terbaca','Skala dalam kondisi samar-samar','Skala tidak terbaca/ tidak ada alat'] },
+      ]
+    },
+    {
+      section: '1. QC 1 KLIMATOLOGI',
+      sub: '1.2. Kondisi Peralatan Klimatologi › 1.2.8 Sangkar Meteo',
+      icon: '🏠',
+      color: 'purple',
+      items: [
+        { id: 'ik_2_8_1', no: '1.2.8.1', label: 'Kondisi sangkar meteo',
+          options: ['Kondisi baik, kayu tidak keropos dan cat putih','Kondisi baik, sedikit keropos dan tidak di cat putih','Kondisi rusak/ tidak ada alat'] },
+        { id: 'ik_2_8_2', no: '1.2.8.2', label: 'Posisi sangkar meteo',
+          options: ['Menghadap utara-selatan','Tidak menghadap utara-selatan/ tidak ada alat'] },
+      ]
+    },
+    {
+      section: '1. QC 1 KLIMATOLOGI',
+      sub: '1.3. QC 1 Kondisi Pengamat Pos Klimatologi',
+      icon: '👤',
+      color: 'purple',
+      items: [
+        { id: 'ik_3_1', no: '1.3.1', label: 'Dedikasi/ integritas',
+          options: ['Baik (dilihat dari hasil pengamatan data)','Kurang','Tidak'] },
+        { id: 'ik_3_2', no: '1.3.2', label: 'Mencatat data, kejadian penting, dan kerusakan alat pada form',
+          options: ['Ya (mencatat rutin dengan baik dan rapih)','Ya (mencatat rutin namun kurang baik dan rapih/ tulisan sulit dibaca)','Tidak rutin/Jarang (mencatat tidak rutin dan kurang baik dan rapih/ tulisan sulit dibaca)'] },
+        { id: 'ik_3_3', no: '1.3.3', label: 'Kemampuan untuk mengoperasikan alat klimatologi',
+          options: ['Mampu','Kurang mampu','Tidak mampu'] },
+        { id: 'ik_3_4', no: '1.3.4', label: 'Kelengkapan peralatan untuk mandor',
+          options: ['Ada','Ada dan tidak lengkap','Tidak ada'] },
+        { id: 'ik_3_5', no: '1.3.5', label: 'Kelancaran pembayaran honor',
+          options: ['Lancar','Kadang - Kadang tidak lancar','Tidak lancar'] },
+        { id: 'ik_3_6', no: '1.3.6', label: 'Pengarsipan data',
+          options: ['Tersimpan baik, mudah dicari, dibuat barchart','Tersimpan dengan baik, mudah dicari','Belum tertata'] },
+      ]
+    }
+  ]
+};
+
+
+function getSchemaKey(jenisAlat) {
+  // Map simplified dropdown values to QC schema keys
+  if (jenisAlat === 'CH_Manual' || jenisAlat === 'CH_Telemetri') return 'Pos Curah Hujan Manual';
+  if (jenisAlat === 'DA_Manual' || jenisAlat === 'DA_Telemetri') return 'Pos Duga Air Manual';
+  if (jenisAlat === 'IK_Manual' || jenisAlat === 'IK_Telemetri') return 'Pos Klimatologi';
+  return null;
+}
+
+function renderQC() {
+  var jenisAlat = (document.getElementById('f_jenisAlat')||{}).value || '';
+  var container = document.getElementById('qcDynamic');
+  if (!container) return;
+  var schemaKey = getSchemaKey(jenisAlat);
+  if (!schemaKey || !QC_SCHEMAS[schemaKey]) {
+    container.innerHTML = '<div class="section-card" style="border:2px dashed var(--gray-2);box-shadow:none;background:var(--gray-1)"><div style="padding:20px;text-align:center;color:var(--gray-4)"><div style="font-size:32px;margin-bottom:8px">🔍</div><div style="font-size:13px;font-weight:600">Form QC muncul setelah memilih Jenis Pos/Alat</div></div></div>';
+    return;
+  }
+  var schema = QC_SCHEMAS[schemaKey];
+  var html = '';
+  schema.forEach(function(group, gi) {
+    html += '<div class="section-card" id="qcSec-'+gi+'">';
+    html += '<div class="section-header" onclick="toggleSection(\'qcS'+gi+'\')">';
+    html += '<div class="section-icon '+(group.color||'yellow')+'">'+(group.icon||'🔧')+'</div>';
+    html += '<div><div class="section-label" style="font-size:12px">'+group.section+'</div><div class="section-sublabel">'+group.sub+'</div></div>';
+    html += '<span class="section-score-badge" id="qcBadge-'+gi+'">0/'+group.items.length+'</span>';
+    html += '<span class="section-chevron open" id="chev-qcS'+gi+'">▾</span>';
+    html += '</div>';
+    html += '<div class="section-body open" id="body-qcS'+gi+'">';
+    group.items.forEach(function(item, ii) {
+      var qcStyle = ii > 0 ? 'border-top:1px solid var(--gray-2);padding-top:14px;margin-top:14px;' : 'margin-top:14px;';
+      html += '<div id="qcItem-'+item.id+'" style="'+qcStyle+'">';
+      html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">';
+      html += '<span style="background:var(--blue-mid);color:white;font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;font-family:monospace;flex-shrink:0">'+item.no+'</span>';
+      html += '<span style="font-size:13px;font-weight:700;color:var(--blue-deep)">'+item.label+'</span>';
+      html += '<button onclick="clearQcItem(\''+item.id+'\')" style="margin-left:auto;font-size:10px;font-weight:600;color:var(--gray-4);background:var(--gray-2);border:none;border-radius:5px;padding:3px 8px;cursor:pointer;flex-shrink:0">Clear</button>';
+      html += '</div>';
+      html += '<div style="display:flex;gap:10px;align-items:flex-start">';
+      html += '<div style="flex:1">';
+      item.options.forEach(function(opt, oi) {
+        html += '<label class="qc-radio-label" id="optLabel-'+item.id+'-'+oi+'" onclick="onQcRadioClick(\''+item.id+'\','+oi+','+gi+','+group.items.length+')">';
+        html += '<input type="radio" name="qc_'+item.id+'" value="'+opt+'" style="width:16px;height:16px;accent-color:var(--blue-mid);flex-shrink:0;pointer-events:none">';
+        html += '<span style="font-size:13px;line-height:1.4">'+opt+'</span>';
+        html += '</label>';
+      });
+      if (item.note) {
+        html += '<input type="text" id="qcNote-'+item.id+'" placeholder="Catatan tambahan..." style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid var(--gray-2);background:var(--gray-1);font-size:13px;font-family:Inter,sans-serif;margin-top:2px;outline:none">';
+      }
+      html += '</div>';
+      // Photo slot
+      html += '<div style="flex:0 0 96px">';
+      html += '<div class="qc-photo-slot" id="qcPhotoSlot-'+item.id+'" onclick="triggerQcPhoto(\''+item.id+'\')">';
+      html += '<input type="file" id="qcPhotoInput-'+item.id+'" accept="image/*" capture="environment" style="display:none" onchange="handleQcPhoto(event,\''+item.id+'\')">';
+      html += '<div id="qcPhotoEmpty-'+item.id+'"><div style="font-size:22px;text-align:center">📎</div><div style="font-size:10px;color:var(--gray-4);text-align:center;margin-top:3px;font-weight:500">Lampiran</div></div>';
+      html += '<div id="qcPhotoFilled-'+item.id+'" style="display:none;position:absolute;inset:0">';
+      html += '<img id="qcPhotoImg-'+item.id+'" style="width:100%;height:100%;object-fit:cover">';
+      html += '<button onclick="event.stopPropagation();removeQcPhoto(\''+item.id+'\')" style="position:absolute;top:3px;right:3px;background:rgba(229,57,53,0.85);color:white;border:none;border-radius:50%;width:20px;height:20px;font-size:11px;cursor:pointer">✕</button>';
+      html += '<div id="qcPhotoStatus-'+item.id+'" style="position:absolute;bottom:3px;left:3px;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;background:rgba(10,37,64,0.7);color:white"></div>';
+      html += '</div>';
+      html += '</div>';
+      html += '<div id="qcPhotoTime-'+item.id+'" style="font-size:9px;color:var(--gray-3);text-align:center;margin-top:4px"></div>';
+      html += '</div></div>';
+      html += '<input type="hidden" id="qcVal-'+item.id+'">';
+      html += '</div>';
+    });
+    html += '</div></div>';
+  });
+  container.innerHTML = html;
+  updateQcBadges();
+}
+
+function onQcRadioClick(itemId, oi, gi, groupLen) {
+  var inputs = document.querySelectorAll('input[name="qc_'+itemId+'"]');
+  if (inputs[oi]) inputs[oi].checked = true;
+  var val = inputs[oi] ? inputs[oi].value : '';
+  var hidden = document.getElementById('qcVal-'+itemId);
+  if (hidden) hidden.value = val;
+  // Style labels
+  for (var i=0; i<inputs.length; i++) {
+    var lbl = document.getElementById('optLabel-'+itemId+'-'+i);
+    if (lbl) lbl.classList.toggle('selected', i === oi);
+  }
+  // Timestamp
+  var timeEl = document.getElementById('qcPhotoTime-'+itemId);
+  if (timeEl && !timeEl.dataset.hasTime) {
+    var now = new Date();
+    timeEl.textContent = 'Update: '+now.toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})+', '+now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})+' WIB';
+    timeEl.dataset.hasTime = '1';
+  }
+  updateQcBadges();
+}
+
+function clearQcItem(itemId) {
+  document.querySelectorAll('input[name="qc_'+itemId+'"]').forEach(function(r){ r.checked=false; });
+  document.querySelectorAll('[id^="optLabel-'+itemId+'-"]').forEach(function(l){ l.classList.remove('selected'); });
+  var t=document.getElementById('qcPhotoTime-'+itemId); if(t){t.textContent='';delete t.dataset.hasTime;}
+  updateQcBadges();
+}
+
+function updateQcBadges() {
+  var cont = document.getElementById('qcDynamic'); if (!cont) return;
+  var jenisAlat = (document.getElementById('f_jenisAlat')||{}).value||'';
+  var sk = getSchemaKey(jenisAlat); if (!sk) return;
+  QC_SCHEMAS[sk].forEach(function(group, gi) {
+    var filled = group.items.filter(function(item){ return document.querySelector('input[name="qc_'+item.id+'"]:checked'); }).length;
+    var b = document.getElementById('qcBadge-'+gi);
+    if (b) { b.textContent=filled+'/'+group.items.length; b.className='section-score-badge'+(filled>0?' filled':''); }
+  });
+}
+
+function triggerQcPhoto(id) { var el=document.getElementById('qcPhotoInput-'+id); if(el)el.click(); }
+function handleQcPhoto(e, id) {
+  var file=e.target.files[0]; if(!file) return;
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    qcItemPhotos[id]={file:file,base64:ev.target.result,driveUrl:'',name:file.name,status:'pending'};
+    renderQcPhotoSlot(id);
+    var sl=document.getElementById('qcPhotoSlot-'+id); if(sl){sl.style.borderColor='var(--teal)';sl.style.borderStyle='solid';}
+    var t=document.getElementById('qcPhotoTime-'+id);
+    if(t){var now=new Date();t.textContent='Update: '+now.toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})+', '+now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})+' WIB';t.dataset.hasTime='1';}
+  };
+  reader.readAsDataURL(file); e.target.value='';
+}
+function renderQcPhotoSlot(id) {
+  var data=qcItemPhotos[id];
+  var empty=document.getElementById('qcPhotoEmpty-'+id);
+  var filled=document.getElementById('qcPhotoFilled-'+id);
+  var img=document.getElementById('qcPhotoImg-'+id);
+  var status=document.getElementById('qcPhotoStatus-'+id);
+  if(!empty) return;
+  if(data){empty.style.display='none';filled.style.display='block';img.src=data.base64;if(status)status.textContent=data.status==='done'?'✓':data.status==='uploading'?'⬆️':'';}
+  else{empty.style.display='flex';filled.style.display='none';}
+}
+function removeQcPhoto(id){delete qcItemPhotos[id];renderQcPhotoSlot(id);}
+
+// ── INSPEKSI ────────────────────────────────────────────────
+var insFotoData = Array(10).fill(null);
+
+function insRow(id, label, options) {
+  var opts = options || ['Baik','Rusak','Tidak Ada','Ada'];
+  var html = '<div style="display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--gray-2)">';
+  html += '<span style="flex:1;font-size:13px;color:var(--gray-5);line-height:1.3">'+label+'</span>';
+  html += '<select id="'+id+'" style="width:120px;flex-shrink:0;padding:6px 8px;border-radius:6px;border:1.5px solid var(--gray-2);background:var(--gray-1);font-size:12px;color:var(--blue-deep);outline:none">';
+  html += '<option value="">— pilih —</option>';
+  opts.forEach(function(o){ html += '<option>'+o+'</option>'; });
+  html += '</select></div>';
+  return html;
+}
+function insSub(label) {
+  return '<div style="background:var(--teal-soft);border-radius:8px;padding:7px 12px;margin-top:14px"><span style="font-size:11px;font-weight:700;color:var(--blue-mid);text-transform:uppercase;letter-spacing:0.6px">'+label+'</span></div>';
+}
+function insCard(id, icon, color, title, sub, body) {
+  var h = '<div class="section-card" id="ins-'+id+'">';
+  h += '<div class="section-header" onclick="toggleSection(\'ins-s'+id+'\')">';
+  h += '<div class="section-icon '+color+'">'+icon+'</div>';
+  h += '<div><div class="section-label">'+title+'</div><div class="section-sublabel">'+sub+'</div></div>';
+  h += '<span class="section-chevron open" id="chev-ins-s'+id+'">▾</span>';
+  h += '</div>';
+  h += '<div class="section-body open" id="body-ins-s'+id+'">'+body+'</div>';
+  h += '</div>';
+  return h;
+}
+var insSection = insCard; // alias
+var insSubHeader = insSub; // alias
+
+function insFotoSlotHtml(idx, label) {
+  var h = '<div>';
+  h += '<div style="font-size:10px;font-weight:600;color:var(--gray-4);margin-bottom:5px;text-align:center;line-height:1.3">'+label+'</div>';
+  h += '<div class="id-photo-slot" id="insFotoSlot'+idx+'" onclick="triggerInsFoto('+idx+')" style="aspect-ratio:4/3">';
+  h += '<input type="file" id="insFotoInput'+idx+'" accept="image/*" capture="environment" style="display:none" onchange="handleInsFoto(event,'+idx+')">';
+  h += '<div id="insFotoEmpty'+idx+'" class="id-slot-empty"><div style="font-size:22px">📷</div><div style="font-size:10px;color:var(--gray-4);margin-top:3px;font-weight:500">Foto '+(idx+1)+'</div></div>';
+  h += '<div class="id-slot-filled" id="insFotoFilled'+idx+'" style="display:none">';
+  h += '<img id="insFotoImg'+idx+'" style="width:100%;height:100%;object-fit:cover">';
+  h += '<button onclick="event.stopPropagation();removeInsFoto('+idx+')" style="position:absolute;top:3px;right:3px;background:rgba(229,57,53,0.85);color:white;border:none;border-radius:50%;width:20px;height:20px;font-size:11px;cursor:pointer">✕</button>';
+  h += '<div id="insFotoStatus'+idx+'" style="position:absolute;bottom:3px;left:3px;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;background:rgba(10,37,64,0.7);color:white"></div>';
+  h += '</div></div></div>';
+  return h;
+}
+function triggerInsFoto(idx){ var e=document.getElementById('insFotoInput'+idx); if(e)e.click(); }
+function handleInsFoto(e, idx) {
+  var file=e.target.files[0]; if(!file) return;
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    insFotoData[idx]={file:file,base64:ev.target.result,driveUrl:'',name:file.name,status:'pending'};
+    renderInsFotoSlot(idx); updateInsFotoCount();
+  };
+  reader.readAsDataURL(file); e.target.value='';
+}
+function renderInsFotoSlot(idx) {
+  var data=insFotoData[idx];
+  var empty=document.getElementById('insFotoEmpty'+idx);
+  var filled=document.getElementById('insFotoFilled'+idx);
+  var img=document.getElementById('insFotoImg'+idx);
+  if(!empty) return;
+  if(data){empty.style.display='none';filled.style.display='block';img.src=data.base64;}
+  else{empty.style.display='flex';filled.style.display='none';}
+}
+function removeInsFoto(idx){insFotoData[idx]=null;renderInsFotoSlot(idx);updateInsFotoCount();}
+function updateInsFotoCount(){
+  var n=insFotoData.filter(Boolean).length;
+  var el=document.getElementById('insFotoCount');
+  if(el){el.textContent=n+'/'+insFotoData.filter(Boolean).length+' foto';}
+}
+
+const INS_SCHEMAS = {
+  'CH': {
+    label: 'Pos Curah Hujan',
+    headerFields: `
+      <div class="field"><div class="field-label">Nama Pos Curah Hujan <span class="req">*</span></div>
+        <input class="field-input" id="ins_namaPOS" placeholder="cth. POS CURAH HUJAN SAMBOJA"></div>
+      <div class="field"><div class="field-label">Diameter Corong Penakar (mm)</div>
+        <input class="field-input" id="ins_diamCorong" placeholder="cth. 100 mm"></div>`,
+    sections: () => `
+      ${insSection('1','⚙️','yellow','1. Peralatan','A. Manual & B. Telemetri/Logger',
+        insSubHeader('A. Curah Hujan Manual') +
+        insRow('ins_p_mulut','Mulut/Corong') + insRow('ins_p_bodi','Bodi Penakar') +
+        insRow('ins_p_penampung','Penampung Air') + insRow('ins_p_kran','Kran') +
+        insRow('ins_p_penyangga','Penyangga/Tiang Dudukan') +
+        insSubHeader('B. Curah Hujan Telemetri/Logger') +
+        insRow('ins_t_logger','Logger') + insRow('ins_t_accu','Accu') +
+        insRow('ins_t_modem','Modem') + insRow('ins_t_solar','Solar Cell') +
+        insRow('ins_t_scc','Solar Charge Controller') + insRow('ins_t_boxpanel','Box Panel') +
+        insRow('ins_t_penyangga2','Penyangga/Tiang Dudukan') + insRow('ins_t_mulut2','Mulut/Corong') +
+        insRow('ins_t_bodi2','Bodi Penakar') + insRow('ins_t_tbucket','Sensor T-Bucket')
+      )}
+      ${insSection('2','📦','green','2. Perlengkapan dan Bahan','Gelas ukur & formulir',
+        insRow('ins_plk_gelas','A. Gelas Pengukur') +
+        insRow('ins_plk_form','B. Formulir Isian Pengamat',['Ada (12 Buku)','Ada, tidak lengkap','Tidak Ada'])
+      )}
+      ${insSection('3','🏗','teal','3. Bangunan dan Lingkungan','Pagar, box, papan keterangan',
+        insSubHeader('A. Pagar') +
+        insRow('ins_b_pintu','Pintu pagar') + insRow('ins_b_engsel','Engsel') +
+        insRow('ins_b_kunci','Kunci Slot') + insRow('ins_b_gembok','Gembok') +
+        insRow('ins_b_tiang','Tiang Pagar/Besi Siku/Balok Sudut') +
+        insRow('ins_b_panel','Panel Pagar (Papan/Kawat Harmonika/BRC)',['Baik','Rusak (Berkarat)','Tidak Ada']) +
+        insRow('ins_b_besi','Besi Strip/Balok') + insRow('ins_b_kawat','Kawat Duri') +
+        insRow('ins_b_pondasi','Pondasi') +
+        insSubHeader('B. Box Pengaman Logger') +
+        insRow('ins_b_engsel2','Engsel') + insRow('ins_b_kunci2','Kunci Slot') +
+        insRow('ins_b_gembok2','Gembok') + insRow('ins_b_panel2','Panel') +
+        insSubHeader('C & D. Papan & Lingkungan') +
+        insRow('ins_b_papan','C. Papan Keterangan Pos') +
+        insRow('ins_b_lingkungan','D. Kondisi Lingkungan',['Bebas Gangguan','Ada Gangguan','Tidak Terawat'])
+      )}
+      ${insSection('4','📝','purple','4. Keterangan Lain','Catatan temuan lapangan',
+        `<div class="field"><div class="field-label">Keterangan A</div>
+          <input class="field-input" id="ins_ket_a" placeholder="cth. Kebersihan → Bersih"></div>
+         <div class="field"><div class="field-label">Keterangan B</div>
+          <input class="field-input" id="ins_ket_b" placeholder="cth. Peralatan Terawat"></div>
+         <div class="field"><div class="field-label">Catatan Umum</div>
+          <textarea class="field-textarea" id="ins_catatan" placeholder="Temuan, rekomendasi..." style="min-height:80px"></textarea></div>`
+      )}`,
+    fotoLabels: ['Penakar Curah Hujan Manual','Penakar Curah Hujan Otomatis','Perlengkapan dan Bahan','Bangunan dan Lingkungan']
+  },
+
+  'IK': {
+    label: 'Pos Klimatologi',
+    headerFields: `
+      <div class="field"><div class="field-label">Nama Pos Iklim <span class="req">*</span></div>
+        <input class="field-input" id="ins_namaPOS" placeholder="cth. POS KLIMATOLOGI MIAU BARU - PESAF"></div>`,
+    sections: () => `
+      ${insSection('1','⚙️','yellow','1. Peralatan','A–H: Curah Hujan, Penguapan, Suhu, Angin, Radiasi',
+        insSubHeader('A. Curah Hujan Manual') +
+        insRow('ins_a_diamcorong','- Diameter Corong Penakar') +
+        insRow('ins_a_mulut','- Mulut/Corong') + insRow('ins_a_body','- Body Penakar') +
+        insRow('ins_a_penampung','- Penampung Air') + insRow('ins_a_kran','- Kran') +
+        insRow('ins_a_cat','- Cat Body Penakar') + insRow('ins_a_penyangga','- Penyangga') +
+
+        insSubHeader('B. Curah Hujan Otomatis/ARR') +
+        insRow('ins_b_diamcorong','- Diameter Corong Penakar') +
+        insRow('ins_b_mulut','- Mulut/Corong') + insRow('ins_b_kanopi','- Kanopi') +
+        insRow('ins_b_body','- Body Penakar') + insRow('ins_b_engsel','- Engsel') +
+        insRow('ins_b_kunci','- Kunci Slot') + insRow('ins_b_gembok','- Gembok') +
+        insRow('ins_b_jamarr','- Jam ARR') + insRow('ins_b_knop','- Knop Pemacu Jam') +
+        insRow('ins_b_tabung','- Tabung/Drum Kertas Grafik') + insRow('ins_b_pengait','- Pengait Pena') +
+        insRow('ins_b_tabungpengait','- Tabung Pengait Pena') + insRow('ins_b_pelampung','- Pelampung pengait Pena') +
+        insRow('ins_b_pipa','- Pipa Syphon/Leher Angsa') + insRow('ins_b_nivo','- Nivo/Mata Lembu') +
+        insRow('ins_b_pan','- Pan Penampung Air') + insRow('ins_b_cat2','- Cat Bodi Penakar') +
+
+        insSubHeader('C. Curah Hujan Telemetri/Logger') +
+        insRow('ins_c_logger','- Logger') + insRow('ins_c_accu','- Accu') +
+        insRow('ins_c_modem','- Modem') + insRow('ins_c_solar','- Solar Cell') +
+        insRow('ins_c_invertor','- Invertor Solar Cell') + insRow('ins_c_boxpanel','- Box Pengaman') +
+
+        insSubHeader('D. Penguapan') +
+        insRow('ins_d_pan','- Pan Penampung Air') + insRow('ins_d_stillwell','- Still Well/Sumur') +
+        insRow('ins_d_hookgauge','- Hook Gauge') + insRow('ins_d_tabungair','- Tabung Persediaan Air') +
+        insRow('ins_d_termapung','- Termometer Apung') + insRow('ins_d_pondasi','- Pondasi') +
+
+        insSubHeader('E. Suhu Udara') +
+        insRow('ins_e_sangkar','- Sangkar Klimatologi') + insRow('ins_e_statif','- Statif Penyangga Termometer') +
+        insRow('ins_e_termmin','- Termometer Minimum') + insRow('ins_e_termmaks','- Termometer Maksimum') +
+        insRow('ins_e_termbasah','- Termometer Bola Basah') + insRow('ins_e_termkering','- Termometer Bola kering') +
+        insRow('ins_e_thermo','- Thermohigrograph') +
+
+        insSubHeader('E. Thermohigrograph') +
+        insRow('ins_e_jam','+ Jam Thermohigrograph') + insRow('ins_e_drum','+ Drum Clock dan Jepitan Kertas') +
+        insRow('ins_e_bodythermo','+ Body Thermohigrograph') +
+
+        insSubHeader('F. Penyinaran Matahari') +
+        insRow('ins_f_mounting','- Mounting Bola Kristal') + insRow('ins_f_bola','- Bola Kristal') +
+        insRow('ins_f_tiang','- Tiang Penyangga Bola Kristal') +
+
+        insSubHeader('G. Solar Radiasi') +
+        insRow('ins_g_body','- Body Actinograph') + insRow('ins_g_gelardome','- Gelar Dome') +
+        insRow('ins_g_sensor','- Sensor (Bimetal cat hitam dan Putih)') +
+        insRow('ins_g_plat','- Plat Pengatur Bimetal') + insRow('ins_g_mekanik','- Mekanik Pembesar') +
+        insRow('ins_g_tangki','- Tangki dan Pena Pencatat') + insRow('ins_g_drum','- Drum Clock') +
+        insRow('ins_g_container','- Container Silica Gel') + insRow('ins_g_nivo','- Nivo Kotak (Mata Lembu)') +
+        insRow('ins_g_penutup','- Penutup/Cover') + insRow('ins_g_tinta','- G. Tinta') +
+        insRow('ins_g_tiangpenyangga','- Tiang Penyangga') +
+
+        insSubHeader('H. Kecepatan Angin/Anemometer') +
+        insRow('ins_h_body','- Body Anemometer') + insRow('ins_h_speedo','- Speedometer') +
+        insRow('ins_h_mangkok','- Mangkok/Cup Counter Anemometer') + insRow('ins_h_pipa','- Pipa/Tiang Penyangga')
+      )}
+      ${insSection('2','📦','green','2. Perlengkapan dan Bahan','A–H Perlengkapan Klimatologi',
+        insRow('ins_plk_a','A. Gelas Pengukur') +
+        insRow('ins_plk_b','B. Formulir Isian Pengamat',['Ada (2 Buku)','Ada, tidak lengkap','Tidak Ada']) +
+        insRow('ins_plk_c','C. Kertas Grafik Curah Hujan') +
+        insRow('ins_plk_d','D. Kertas Grafik Thermohigrograph') +
+        insRow('ins_plk_e','E. Kertas Grafik Actinograph') +
+        insRow('ins_plk_f','F. Kertas Pias Sun Shine') +
+        insRow('ins_plk_g','G. Tinta') + insRow('ins_plk_h','H. Pena')
+      )}
+      ${insSection('3','🏗','teal','3. Bangunan dan Lingkungan','Pagar, box, papan & lingkungan',
+        insSubHeader('A. Pagar') +
+        insRow('ins_b_pintu','- Pintu pagar') + insRow('ins_b_engsel2','- Engsel') +
+        insRow('ins_b_kunci2','- Kunci Slot') +
+        insRow('ins_b_gembok2','- Gembok',['Baik','Rusak (Macet)','Tidak Ada']) +
+        insRow('ins_b_tiang','- Tiang Pagar/Besi Siku/Balok Sudut') +
+        insRow('ins_b_panel','- Panel Pagar (Papan/Kawat Harmonika)',['Baik','Rusak (Berkarat)','Tidak Ada']) +
+        insRow('ins_b_besi','- Besi Strip/Balok') + insRow('ins_b_kawat','- Kawat Duri') +
+        insRow('ins_b_pondasi2','- Pondasi') +
+        insSubHeader('B. Box Pengaman Logger') +
+        insRow('ins_b_engsel3','- Engsel') + insRow('ins_b_kunci3','- Kunci Slot') +
+        insRow('ins_b_gembok3','- Gembok',['Baik','Rusak (Macet)','Tidak Ada']) +
+        insRow('ins_b_panelbody','- Panel/Body Pengaman') +
+        insSubHeader('C & D. Papan & Lingkungan') +
+        insRow('ins_b_papan','C. Papan Keterangan Pos') +
+        insRow('ins_b_lingkungan','D. Kondisi Lingkungan',['Bebas Gangguan','Ada Gangguan','Tidak Terawat'])
+      )}
+      ${insSection('4','📝','purple','4. Keterangan Lain','Catatan temuan lapangan',
+        `<div class="field"><div class="field-label">Keterangan A</div>
+          <input class="field-input" id="ins_ket_a" placeholder="cth. A. Peralatan Terawat"></div>
+         <div class="field"><div class="field-label">Keterangan B</div>
+          <input class="field-input" id="ins_ket_b" placeholder="cth. B. Kebersihan → Bersih (Bebas Rumput dan Sampah)"></div>
+         <div class="field"><div class="field-label">Keterangan C</div>
+          <input class="field-input" id="ins_ket_c" placeholder="Keterangan C..."></div>
+         <div class="field"><div class="field-label">Catatan Umum</div>
+          <textarea class="field-textarea" id="ins_catatan" placeholder="Temuan, rekomendasi..." style="min-height:80px"></textarea></div>`
+      )}`,
+    fotoLabels: ['Penakar Curah Hujan Manual','Penakar Curah Hujan Otomatis','Curah Hujan Telemetri/Logger','Penguapan','Suhu Udara','Penyinaran Matahari/Campbell Stokes','Solar Radiasi','Anemometer/Kecepatan Angin','Perlengkapan dan Bahan','Bangunan dan Lingkungan']
+  },
+
+  'DA': {
+    label: 'Pos Duga Air',
+    headerFields: `
+      <div class="field"><div class="field-label">Nama Pos Duga Air <span class="req">*</span></div>
+        <input class="field-input" id="ins_namaPOS" placeholder="cth. POS DUGA AIR PELA BARU"></div>
+      <div class="field"><div class="field-label">Jumlah papan Duga Air/Peilschaal</div>
+        <input class="field-input" id="ins_jumlahPapan" placeholder="cth. 5 Buah Papan"></div>`,
+    sections: () => `
+      ${insSection('1','⚙️','yellow','1. Peralatan','A. Duga Air Manual & B. Telemetri/Logger',
+        insSubHeader('A. Duga Air Manual') +
+        insRow('ins_p_tiang','Tiang Penyangga Papan Duga Air/Peilschaal') +
+        insRow('ins_p_lembaran','Lembaran Papan Duga Air/Peilschaal') +
+        insSubHeader('B. Duga Air Telemetri/Logger') +
+        insRow('ins_t_logger','Logger') + insRow('ins_t_accu','Accu') +
+        insRow('ins_t_modem','Modem') + insRow('ins_t_solar','Solar Cell') +
+        insRow('ins_t_invertor','Invertor Solar Cell') + insRow('ins_t_boxpanel','Box Panel') +
+        insRow('ins_t_pipa','Pipa Sensor') + insRow('ins_t_kabel','Kabel Sensor') +
+        insRow('ins_t_sensor','Sensor TMA')
+      )}
+      ${insSection('2','📦','green','2. Perlengkapan dan Bahan','Papan peilschaal & formulir',
+        insRow('ins_plk_papan','A. Papan Peilschaal',['Ada (5 Papan)','Ada, tidak lengkap','Tidak Ada']) +
+        insRow('ins_plk_form','B. Formulir Isian Pengamat',['Ada (12 Buku)','Ada, tidak lengkap','Tidak Ada'])
+      )}
+      ${insSection('3','🏗','teal','3. Bangunan dan Lingkungan','Pagar, box, jembatan, tangga',
+        insSubHeader('A. Pagar') +
+        insRow('ins_b_pintu','Pintu pagar') + insRow('ins_b_engsel','Engsel') +
+        insRow('ins_b_kunci','Kunci Slot') + insRow('ins_b_gembok','Gembok') +
+        insRow('ins_b_tiang','Tiang Pagar/Besi Siku/Balok Sudut') +
+        insRow('ins_b_panel','Panel Pagar (BRC/Hollow)',['Baik','Rusak (Berkarat)','Tidak Ada']) +
+        insRow('ins_b_besi','Besi Strip/Balok') + insRow('ins_b_kawat','Kawat Duri') +
+        insRow('ins_b_pondasi','Pondasi') +
+        insSubHeader('B. Box Pengaman') +
+        insRow('ins_b_engsel2','Engsel') + insRow('ins_b_kunci2','Kunci Slot') +
+        insRow('ins_b_gembok2','Gembok') + insRow('ins_b_panel2','Panel') +
+        insSubHeader('C–F. Jembatan, Tangga, Papan & Lingkungan') +
+        insRow('ins_b_jembatan','C. Jembatan') + insRow('ins_b_tangga','D. Tangga') +
+        insRow('ins_b_papan','E. Papan Keterangan Pos') +
+        insRow('ins_b_lingkungan','F. Kondisi Lingkungan',['Bebas Gangguan','Ada Gangguan','Tidak Terawat'])
+      )}
+      ${insSection('4','📝','purple','Keterangan Lain','Catatan temuan lapangan',
+        `<div class="field"><div class="field-label">Keterangan A</div>
+          <input class="field-input" id="ins_ket_a" placeholder="cth. Kebersihan → Bersih (Bebas Rumput dan Sampah)"></div>
+         <div class="field"><div class="field-label">Keterangan B</div>
+          <input class="field-input" id="ins_ket_b" placeholder="cth. Peralatan dan Bangunan Terawat"></div>
+         <div class="field"><div class="field-label">Keterangan C</div>
+          <input class="field-input" id="ins_ket_c" placeholder="cth. Alur Lurus 2 kali Lebar Sungai"></div>
+         <div class="field"><div class="field-label">Catatan Umum</div>
+          <textarea class="field-textarea" id="ins_catatan" placeholder="Temuan, rekomendasi..." style="min-height:80px"></textarea></div>`
+      )}`,
+    fotoLabels: ['Pos Duga Air Manual','Pos Duga Air Otomatis/Logger','Perlengkapan dan Bahan','Bangunan dan Lingkungan']
+  }
+};
+
+
+function getInsKey(jenisAlat) {
+  if (jenisAlat === 'CH_Manual' || jenisAlat === 'CH_Telemetri') return 'CH';
+  if (jenisAlat === 'DA_Manual' || jenisAlat === 'DA_Telemetri') return 'DA';
+  if (jenisAlat === 'IK_Manual' || jenisAlat === 'IK_Telemetri') return 'IK';
+  return null;
+}
+
+function renderInspeksiForm() {
+  var jenisAlat = (document.getElementById('f_jenisAlat')||{}).value||'';
+  var key = getInsKey(jenisAlat);
+  var schema = INS_SCHEMAS[key];
+  var placeholder = '<div class="section-card" style="border:2px dashed var(--gray-2);box-shadow:none;background:var(--gray-1)"><div style="padding:20px;text-align:center;color:var(--gray-4)"><div style="font-size:28px;margin-bottom:8px">🔍</div><div style="font-size:13px;font-weight:600">Pilih Jenis Pos/Alat di atas</div></div></div>';
+  if (!schema) {
+    document.getElementById('ins-header-fields').innerHTML='';
+    document.getElementById('inspeksiDynamic').innerHTML=placeholder;
+    document.getElementById('ins-foto-grid').innerHTML='';
+    document.getElementById('ins-header-sub').textContent='Pilih Jenis Alat di Identitas Pos';
+    return;
+  }
+  document.getElementById('ins-header-fields').innerHTML = schema.headerFields;
+  document.getElementById('ins-header-sub').textContent = schema.label;
+  document.getElementById('inspeksiDynamic').innerHTML = schema.sections();
+  var fotoHtml = '';
+  schema.fotoLabels.forEach(function(lbl,i){ fotoHtml += insFotoSlotHtml(i,lbl); });
+  document.getElementById('ins-foto-grid').innerHTML = fotoHtml;
+  document.getElementById('ins-foto-sub').textContent = schema.fotoLabels.length+' foto dokumentasi';
+  insFotoData.fill(null);
+  var c=document.getElementById('insFotoCount'); if(c)c.textContent='0/'+schema.fotoLabels.length+' foto';
+}
+
+// ── DRAFT & SUBMIT ──────────────────────────────────────────
+function saveDraft() {
+  var data={};
+  document.querySelectorAll('#formQC input[id],#formQC select[id],#formQC textarea[id]').forEach(function(el){ if(el.id)data[el.id]=el.value; });
+  localStorage.setItem('qc_draft',JSON.stringify(data));
+  showToast('Draft QC tersimpan 💾','success');
+}
+function loadDraft() {
+  var s=localStorage.getItem('qc_draft'); if(!s) return;
+  try{var data=JSON.parse(s); Object.keys(data).forEach(function(k){var e=document.getElementById(k);if(e)e.value=data[k]||'';});}catch(e){}
+  updateBadge();
+}
+function saveInspeksiDraft() {
+  var data={};
+  document.querySelectorAll('#formIns input[id],#formIns select[id],#formIns textarea[id]').forEach(function(el){ if(el.id)data[el.id]=el.value; });
+  localStorage.setItem('ins_draft',JSON.stringify(data));
+  showToast('Draft Inspeksi tersimpan 💾','success');
+}
+function showSubmitModal() {
+  var namaPOS = (document.getElementById('f_namaPOS')||{}).value||'';
+  var tanggal = (document.getElementById('f_tanggal')||{}).value||'';
+  if(!namaPOS||!tanggal){showToast('Isi Nama Pos & Tanggal dahulu','error');return;}
+  document.getElementById('summaryContent').innerHTML =
+    '<div class="summary-row"><span class="summary-key">Pos</span><span class="summary-val">'+namaPOS+'</span></div>'+
+    '<div class="summary-row"><span class="summary-key">Tanggal</span><span class="summary-val">'+tanggal+'</span></div>'+
+    '<div class="summary-row"><span class="summary-key">Target</span><span class="summary-val" style="font-size:11px;font-family:monospace">'+(CONFIG.sheetsId?CONFIG.sheetsId.substring(0,20)+'...':'⚠️ Belum dikonfigurasi')+'</span></div>';
+  document.getElementById('submitModal').classList.add('show');
+}
+function closeModal(){ document.getElementById('submitModal').classList.remove('show'); }
+async function submitData() {
+  if(!CONFIG.configured){showToast('Konfigurasi API dahulu','error');return;}
+  var btn=document.getElementById('btnConfirmSubmit'); btn.textContent='⏳...'; btn.disabled=true;
+  var row = [new Date().toISOString(),'QC',
+    (document.getElementById('f_tanggal')||{}).value||'',
+    (document.getElementById('f_namaPOS')||{}).value||'',
+    (document.getElementById('f_noRegister')||{}).value||'',
+    (document.getElementById('f_jenisAlat')||{}).value||'',
+    (document.getElementById('f_inspektor')||{}).value||''
+  ];
+  try {
+    var url='https://sheets.googleapis.com/v4/spreadsheets/'+CONFIG.sheetsId+'/values/Sheet1!A1:append?valueInputOption=USER_ENTERED&key='+CONFIG.apiKey;
+    var resp=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
+    if(resp.ok){closeModal();showToast('✅ Data QC berhasil dikirim!','success');localStorage.removeItem('qc_draft');}
+    else{var e=await resp.json();throw new Error(e.error&&e.error.message||'Gagal');}
+  } catch(e){closeModal();showToast('❌ '+e.message,'error');}
+  btn.textContent='✅ Kirim'; btn.disabled=false;
+}
+async function submitInspeksi() {
+  if(!CONFIG.configured){showToast('Konfigurasi API dahulu','error');return;}
+  var namaPOS=(document.getElementById('ins_namaPOS')||{}).value||'';
+  if(!namaPOS){showToast('Isi Nama Pos dahulu','error');return;}
+  var fields=[];
+  document.querySelectorAll('#formIns input[id],#formIns select[id],#formIns textarea[id]').forEach(function(el){fields.push(el.value||'');});
+  var driveUrls=insFotoData.filter(Boolean).map(function(d){return d.driveUrl||'';}).join(', ');
+  var row=[new Date().toISOString(),'INSPEKSI'].concat(fields).concat([driveUrls]);
+  try {
+    var url='https://sheets.googleapis.com/v4/spreadsheets/'+CONFIG.sheetsId+'/values/Inspeksi!A1:append?valueInputOption=USER_ENTERED&key='+CONFIG.apiKey;
+    var resp=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
+    if(resp.ok)showToast('✅ Inspeksi berhasil dikirim!','success');
+    else{var e=await resp.json();throw new Error(e.error&&e.error.message||'Gagal');}
+  } catch(e){showToast('❌ '+e.message,'error');}
+}
+
+// ── TOAST ───────────────────────────────────────────────────
+function showToast(msg, type) {
+  var t=document.getElementById('toast');
+  t.textContent=msg;
+  t.className='toast'+(type?' '+type:'')+' show';
+  setTimeout(function(){t.className='toast';},3000);
+}
+
+// ── INIT ────────────────────────────────────────────────────
+// ── DATABASE POS ────────────────────────────────────────────
+var posDatabase = [];   // cache from Sheets
+var posFetchDone = false;
+
+// JSONP via script tag — bypasses CORS completely
+function fetchViaScriptTag(url) {
+  return new Promise(function(resolve, reject) {
+    var cbName = '_qcCb' + Date.now();
+    var script = document.createElement('script');
+    var timer = setTimeout(function() {
+      cleanup();
+      reject(new Error('Timeout'));
+    }, 10000);
+
+    function cleanup() {
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+      clearTimeout(timer);
+    }
+
+    window[cbName] = function(data) {
+      cleanup();
+      resolve(data && data.rows ? data.rows : []);
+    };
+
+    // Append callback param
+    var sep = url.indexOf('?') >= 0 ? '&' : '?';
+    script.src = url + sep + 'callback=' + cbName;
+    script.onerror = function() { cleanup(); reject(new Error('Script load error')); };
+    document.head.appendChild(script);
+  });
+}
+
+async function fetchPosDatabase() {
+  if (!CONFIG.sheetsId) return;
+  var icon = document.getElementById('posLoadIcon');
+  var status = document.getElementById('posDbStatus');
+  if (icon) icon.style.display = 'inline';
+  if (status) status.textContent = '⏳ Memuat database pos...';
+
+  // Try 3 methods in order
+  var success = false;
+
+  // Method 1: Google Apps Script Web App
+  if (CONFIG.appsScriptUrl) {
+    try {
+      // Apps Script redirects — need to follow redirect and handle CORS
+      var asUrl = CONFIG.appsScriptUrl;
+      // Add callback param for JSONP fallback
+      var resp = await fetch(asUrl, {
+        method: 'GET',
+        redirect: 'follow',
+        mode: 'cors',
+        headers: { 'Accept': 'application/json' }
+      });
+      if (resp.ok) {
+        var text = await resp.text();
+        var data;
+        try { data = JSON.parse(text); } catch(e2) {
+          // try JSONP strip
+          data = JSON.parse(text.replace(/^[^(]+\(/, '').replace(/\);\s*$/, ''));
+        }
+        if (data && data.rows && data.rows.length) {
+          buildPosDatabase(data.rows); success = true;
+        }
+      }
+    } catch(e) { console.log('Apps Script fetch error:', e.message); }
+
+    // Fallback: JSONP via script tag (bypasses CORS completely)
+    if (!success) {
+      try {
+        var rows = await fetchViaScriptTag(CONFIG.appsScriptUrl);
+        if (rows && rows.length) { buildPosDatabase(rows); success = true; }
+      } catch(e) { console.log('Script tag fetch error:', e.message); }
+    }
+  }
+
+  // Method 2: gviz/tq (works for public sheets, no CORS in some environments)
+  if (!success) {
+    try {
+      var gvizUrl = 'https://docs.google.com/spreadsheets/d/' + CONFIG.sheetsId +
+        '/gviz/tq?tqx=out:json&sheet=DataPos&range=A2:X500';
+      var resp2 = await fetch(gvizUrl, {mode:'cors'});
+      if (resp2.ok) {
+        var text = await resp2.text();
+        var json = JSON.parse(text.replace(/^[^\(]+\(/, '').replace(/\);\s*$/, ''));
+        var rows = (json.table && json.table.rows) ? json.table.rows.map(function(r) {
+          return (r.c || []).map(function(c) { return (c && c.v != null) ? String(c.v) : ''; });
+        }) : [];
+        if (rows.length) { buildPosDatabase(rows); success = true; }
+      }
+    } catch(e) { console.log('gviz failed:', e.message); }
+  }
+
+  // Method 3: Sheets API with API Key
+  if (!success && CONFIG.apiKey) {
+    try {
+      var apiUrl = 'https://sheets.googleapis.com/v4/spreadsheets/' + CONFIG.sheetsId +
+        '/values/DataPos!A2:X500?key=' + CONFIG.apiKey;
+      var resp3 = await fetch(apiUrl);
+      if (resp3.ok) {
+        var data3 = await resp3.json();
+        var rows3 = data3.values || [];
+        if (rows3.length) { buildPosDatabase(rows3); success = true; }
+      }
+    } catch(e) { console.log('Sheets API failed:', e.message); }
+  }
+
+  if (icon) icon.style.display = 'none';
+  if (!success) {
+    if (status) status.innerHTML =
+      '<span style="color:var(--red)">⚠️ Fetch gagal. Coba salah satu solusi:</span><br>' +
+      '<span style="font-size:10px;line-height:1.6;color:var(--gray-5)">' +
+      '1. Setup Apps Script Web App (lihat panduan)<br>' +
+      '2. Pastikan sheet PUBLIC + isi API Key<br>' +
+      '3. Input data manual di bawah</span>';
+  }
+}
+
+function buildPosDatabase(rows) {
+  var status = document.getElementById('posDbStatus');
+  posDatabase = rows.map(function(r) {
+    return {
+      namaPOS:           r[0]  || '',
+      noRegister:        r[1]  || '',
+      jenisAlat:         r[2]  || '',
+      das:               r[3]  || '',
+      indukSungai:       r[4]  || '',
+      wilayahSungai:     r[5]  || '',
+      alamat:            r[6]  || '',
+      desa:              r[7]  || '',
+      kecamatan:         r[8]  || '',
+      kabupaten:         r[9]  || '',
+      provinsi:          r[10] || '',
+      lat:               r[11] || '',
+      lon:               r[12] || '',
+      koordinatDMS:      r[13] || '',
+      elevasi:           r[14] || '',
+      statusTanah:       r[15] || '',
+      kondisiBangunan:   r[16] || '',
+      tipeSensor:        r[17] || '',
+      didirikanOleh:     r[18] || '',
+      tahunOperasi:      r[19] || '',
+      instansiPengelola: r[20] || '',
+      penjagaPos:        r[21] || '',
+      kualitasJaringan:  r[22] || '',
+      keterangan:        r[23] || ''
+    };
+  }).filter(function(p){ return p.namaPOS; });
+  posFetchDone = true;
+  if (status) {
+    status.textContent = '✅ ' + posDatabase.length + ' pos dimuat';
+    setTimeout(function(){ status.textContent = ''; }, 3000);
+  }
+}
+
+
+
+function onPosInput(val) {
+  updateBadge();
+  if (!val || val.length < 2) { hideSuggest(); return; }
+  var q = val.toLowerCase();
+  var results = posDatabase.filter(function(p) {
+    return p.namaPOS.toLowerCase().indexOf(q) >= 0 ||
+           p.noRegister.toLowerCase().indexOf(q) >= 0;
+  }).slice(0, 8);
+  showSuggest(results, val);
+}
+
+function showSuggest(results, query) {
+  var box = document.getElementById('posSuggestBox');
+  if (!box) return;
+  if (!results.length) { hideSuggest(); return; }
+  box.innerHTML = results.map(function(p, i) {
+    var hl = p.namaPOS.replace(new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi'),
+      '<strong style="color:var(--blue-mid)">$1</strong>');
+    return '<div class="suggest-item" onmousedown="selectPos(' + i + ')" data-idx="' + i + '">' +
+      '<div class="suggest-nama">' + hl + '</div>' +
+      '<div class="suggest-sub">' + (p.noRegister ? p.noRegister + ' · ' : '') + (p.wilayahSungai || '') + (p.jenisAlat ? ' · ' + p.jenisAlat : '') + '</div>' +
+      '</div>';
+  }).join('');
+  box._results = results;
+  box.style.display = 'block';
+}
+
+function hideSuggest() {
+  var box = document.getElementById('posSuggestBox');
+  if (box) box.style.display = 'none';
+}
+
+// Smart field setter — handles text, select, textarea with fuzzy match
+function setField(id, val) {
+  if (!val) return;
+  var el = document.getElementById(id);
+  if (!el) return;
+  if (el.tagName === 'SELECT') {
+    // Try exact match first
+    var found = false;
+    for (var i = 0; i < el.options.length; i++) {
+      if (el.options[i].value === val || el.options[i].text === val) {
+        el.selectedIndex = i; found = true; break;
+      }
+    }
+    // Try case-insensitive / partial match
+    if (!found) {
+      var valLow = val.toLowerCase();
+      for (var j = 0; j < el.options.length; j++) {
+        var optTxt = el.options[j].text.toLowerCase();
+        if (optTxt.indexOf(valLow) >= 0 || valLow.indexOf(optTxt) >= 0) {
+          el.selectedIndex = j; found = true; break;
+        }
+      }
+    }
+    // If still not found, add as new option and select it
+    if (!found && val && !val.startsWith('--')) {
+      var newOpt = document.createElement('option');
+      newOpt.value = val; newOpt.text = val;
+      el.appendChild(newOpt);
+      el.value = val;
+    }
+  } else {
+    el.value = val;
+  }
+}
+
+function selectPos(idx) {
+  var box = document.getElementById('posSuggestBox');
+  if (!box || !box._results) return;
+  var pos = box._results[idx];
+  hideSuggest();
+
+  // Map database fields → form element IDs
+  var fieldMap = {
+    'f_namaPOS':           pos.namaPOS,
+    'f_noRegister':        pos.noRegister,
+    'f_das':               pos.das,
+    'f_indukSungai':       pos.indukSungai,
+    'f_sungai':            pos.indukSungai,   // f_sungai = induk sungai
+    'f_wilayahSungai':     pos.wilayahSungai,
+    'f_alamat':            pos.alamat,
+    'f_desa':              pos.desa,
+    'f_kecamatan':         pos.kecamatan,
+    'f_kabupaten':         pos.kabupaten,
+    'f_provinsi':          pos.provinsi,
+    'f_lat':               pos.lat,
+    'f_lon':               pos.lon,
+    'f_koordinatDMS':      pos.koordinatDMS,
+    'f_elevasi':           pos.elevasi,
+    'f_statusTanah':       pos.statusTanah,
+    'f_jenisAlat':         pos.jenisAlat,
+    'f_kondisiBangunan':   pos.kondisiBangunan,
+    'f_kondisiAlat':       pos.kondisiBangunan,
+    'f_tipeSensor':        pos.tipeSensor,
+    'f_didirikanOleh':     pos.didirikanOleh,
+    'f_tahunOperasi':      pos.tahunOperasi,
+    'f_instansiPengelola': pos.instansiPengelola,
+    'f_penjagaPos':        pos.penjagaPos,
+    'f_kualitasJaringan':  pos.kualitasJaringan,
+    'f_keterangan':         pos.keterangan
+  };
+
+  // Fill all text/select inputs using smart setter
+  Object.keys(fieldMap).forEach(function(id) {
+    setField(id, fieldMap[id]);
+  });
+
+  // Handle kondisi toggle buttons (Baik/Sedang/Rusak)
+  var kondisiMap = {
+    'f_kondisiBangunan': pos.kondisiBangunan,
+    'f_kondisiAlat':     pos.kondisiBangunan,
+    'f_kualitasJaringan': pos.kualitasJaringan,
+    'f_listrik':         pos.listrik
+  };
+  Object.keys(kondisiMap).forEach(function(fid) {
+    var val = kondisiMap[fid];
+    if (!val) return;
+    var btns = document.querySelectorAll('[onclick*="selectKondisi(\'' + fid + '\'"]');
+    btns.forEach(function(btn) {
+      if (btn.textContent.indexOf(val) >= 0) btn.click();
+    });
+  });
+  // Trigger jenis alat change to load correct QC & Inspeksi form
+  if (pos.jenisAlat) onJenisAlatChange();
+  updateBadge();
+  showToast('✅ Data ' + pos.namaPOS + ' dimuat!', 'success');
+}
+
+function onJenisAlatChange() {
+  updateBadge();
+  renderQC();
+  if (typeof renderInspeksiForm === 'function') renderInspeksiForm();
+}
+
+window.addEventListener('DOMContentLoaded', function() {
+  loadConfig();
+  loadDraft();
+  renderQC();
+  if (CONFIG.configured) fetchPosDatabase();
+});
+</script>
+</body>
+</html>
