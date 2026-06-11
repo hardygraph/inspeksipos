@@ -1193,64 +1193,72 @@ async function uploadIdPhotoToDrive(idx) {
 
 async function submitViaAppsScript(sheetName, row) {
   if (!CONFIG.appsScriptUrl) throw new Error('Apps Script URL belum diset');
-  // Encode row as base64 to avoid URL length/encoding issues
   var payload = JSON.stringify({ action: 'appendRow', sheet: sheetName, row: row });
   var encoded = btoa(unescape(encodeURIComponent(payload)));
-  // Use JSONP (script tag) to bypass CORS — same as fetchViaScriptTag
-  return new Promise(function(resolve, reject) {
-    var cbName = '_submitCb' + Date.now();
-    var script = document.createElement('script');
-    var timer = setTimeout(function() {
-      delete window[cbName];
-      if (script.parentNode) script.parentNode.removeChild(script);
-      reject(new Error('Timeout — Apps Script tidak merespons'));
-    }, 15000);
-    window[cbName] = function(result) {
-      delete window[cbName];
-      if (script.parentNode) script.parentNode.removeChild(script);
-      clearTimeout(timer);
-      if (result && result.success) resolve(true);
-      else reject(new Error(result && result.error ? result.error : 'Submit gagal'));
-    };
-    var sep = CONFIG.appsScriptUrl.indexOf('?') >= 0 ? '&' : '?';
-    script.src = CONFIG.appsScriptUrl + sep + 'data=' + encodeURIComponent(encoded) + '&callback=' + cbName;
-    script.onerror = function() {
-      delete window[cbName]; clearTimeout(timer);
-      if (script.parentNode) script.parentNode.removeChild(script);
-      reject(new Error('Script load error'));
-    };
-    document.head.appendChild(script);
-  });
+  var result = await jsonpCall(encoded);
+  if (result && result.success) return true;
+  throw new Error(result && result.error ? result.error : 'Submit gagal');
 }
 
 async function uploadViaAppsScript(fileName, mimeType, base64Data) {
   if (!CONFIG.appsScriptUrl) throw new Error('Apps Script URL belum diset');
-  var payload = JSON.stringify({
-    action: 'uploadFoto', folderId: CONFIG.driveId || '',
-    fileName: fileName, mimeType: mimeType, base64: base64Data
+  // Split base64 into chunks to avoid URL length limit
+  var CHUNK = 50000; // ~50KB per chunk
+  var totalChunks = Math.ceil(base64Data.length / CHUNK);
+  var fileId = 'f_' + Date.now() + '_' + Math.random().toString(36).substr(2,6);
+
+  // Send each chunk
+  for (var i = 0; i < totalChunks; i++) {
+    var chunk = base64Data.substring(i * CHUNK, (i + 1) * CHUNK);
+    var payload = JSON.stringify({
+      action: 'uploadChunk',
+      fileId: fileId,
+      chunk: i,
+      totalChunks: totalChunks,
+      data: chunk,
+      fileName: fileName,
+      mimeType: mimeType,
+      folderId: CONFIG.driveId || ''
+    });
+    var encoded = btoa(unescape(encodeURIComponent(payload)));
+    await jsonpCall(encoded);
+  }
+
+  // Finalize — assemble chunks into Drive file
+  var finalPayload = JSON.stringify({
+    action: 'finalizeUpload',
+    fileId: fileId,
+    fileName: fileName,
+    mimeType: mimeType,
+    folderId: CONFIG.driveId || ''
   });
-  var encoded = btoa(unescape(encodeURIComponent(payload)));
+  var finalEncoded = btoa(unescape(encodeURIComponent(finalPayload)));
+  var result = await jsonpCall(finalEncoded);
+  if (result && result.url) return result.url;
+  throw new Error(result && result.error ? result.error : 'Finalize gagal');
+}
+
+function jsonpCall(encoded) {
   return new Promise(function(resolve, reject) {
-    var cbName = '_uploadCb' + Date.now();
+    var cbName = '_cb' + Date.now() + Math.random().toString(36).substr(2,4);
     var script = document.createElement('script');
     var timer = setTimeout(function() {
       delete window[cbName];
       if (script.parentNode) script.parentNode.removeChild(script);
-      reject(new Error('Upload timeout'));
+      reject(new Error('Timeout'));
     }, 30000);
     window[cbName] = function(result) {
       delete window[cbName];
       if (script.parentNode) script.parentNode.removeChild(script);
       clearTimeout(timer);
-      if (result && result.success) resolve(result.url);
-      else reject(new Error(result && result.error ? result.error : 'Upload gagal'));
+      resolve(result);
     };
     var sep = CONFIG.appsScriptUrl.indexOf('?') >= 0 ? '&' : '?';
     script.src = CONFIG.appsScriptUrl + sep + 'data=' + encodeURIComponent(encoded) + '&callback=' + cbName;
     script.onerror = function() {
       delete window[cbName]; clearTimeout(timer);
       if (script.parentNode) script.parentNode.removeChild(script);
-      reject(new Error('Upload script error'));
+      reject(new Error('Script error'));
     };
     document.head.appendChild(script);
   });
