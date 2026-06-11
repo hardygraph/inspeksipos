@@ -871,7 +871,7 @@ function saveConfig() {
   CONFIG.driveId       = document.getElementById('driveId').value.trim();
   CONFIG.apiKey        = document.getElementById('apiKey').value.trim();
   CONFIG.appsScriptUrl = (document.getElementById('appsScriptUrl')||{}).value ? document.getElementById('appsScriptUrl').value.trim() : CONFIG.appsScriptUrl;
-  if (!CONFIG.sheetsId || !CONFIG.apiKey) { showConfigStatus('err','❌ Wajib isi Sheets ID & API Key'); return; }
+  if (!CONFIG.sheetsId && !CONFIG.appsScriptUrl) { showConfigStatus('err','❌ Wajib isi minimal Sheets ID atau Apps Script URL'); return; }
   CONFIG.configured = true;
   localStorage.setItem('qc_pos_config', JSON.stringify(CONFIG));
   showConfigStatus('ok','✅ Tersimpan');
@@ -1176,23 +1176,56 @@ function updateIdFotoCount() {
   if (el) { el.textContent=n+'/2 foto'; el.style.color=n===2?'var(--green)':n===1?'var(--yellow)':'var(--gray-4)'; }
 }
 async function uploadIdPhotoToDrive(idx) {
-  var item = idPhotoData[idx]; if (!item||!CONFIG.apiKey||!CONFIG.driveId) return;
-  item.status='uploading'; renderIdSlot(idx);
+  var item = idPhotoData[idx]; if (!item || !CONFIG.appsScriptUrl) return;
+  item.status = 'uploading'; renderIdSlot(idx);
   try {
     var ts = new Date().toISOString().replace(/[:.]/g,'-');
-    var nm = document.getElementById('f_namaPOS').value||'Pos';
+    var nm = (document.getElementById('f_namaPOS')||{}).value || 'Pos';
     var fn = 'ID_'+nm+'_'+(idx===0?'Bangunan':'Alat')+'_'+ts+'.jpg';
-    var resp = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&key='+CONFIG.apiKey, {
-      method:'POST', headers:{'Content-Type':'multipart/related; boundary=id_bound'},
-      body: buildMultipart(fn, item.file.type, item.base64.split(',')[1])
-    });
-    if (resp.ok) { var r=await resp.json(); item.driveUrl='https://drive.google.com/file/d/'+r.id+'/view'; item.status='done'; }
-    else item.status='error';
-  } catch(e) { item.status='error'; }
+    var url = await uploadViaAppsScript(fn, item.file.type, item.base64.split(',')[1]);
+    item.driveUrl = url; item.status = 'done';
+  } catch(e) { item.status = 'error'; console.log('Upload ID foto error:', e.message); }
   renderIdSlot(idx);
 }
 
 // ── MULTIPART BODY ──────────────────────────────────────────
+// ── UPLOAD VIA APPS SCRIPT (doPost) ──────────────────────────
+async function uploadViaAppsScript(fileName, mimeType, base64Data) {
+  if (!CONFIG.appsScriptUrl) throw new Error('Apps Script URL belum diset');
+  var payload = {
+    action:   'uploadFoto',
+    folderId: CONFIG.driveId || '',
+    fileName: fileName,
+    mimeType: mimeType,
+    base64:   base64Data
+  };
+  var resp = await fetch(CONFIG.appsScriptUrl, {
+    method:   'POST',
+    redirect: 'follow',
+    headers:  { 'Content-Type': 'application/json' },
+    body:     JSON.stringify(payload)
+  });
+  if (!resp.ok) throw new Error('HTTP ' + resp.status);
+  var result = await resp.json();
+  if (!result.success) throw new Error(result.error || 'Upload gagal');
+  return result.url;
+}
+
+async function submitViaAppsScript(sheetName, row) {
+  if (!CONFIG.appsScriptUrl) throw new Error('Apps Script URL belum diset');
+  var payload = { action: 'appendRow', sheet: sheetName, row: row };
+  var resp = await fetch(CONFIG.appsScriptUrl, {
+    method:   'POST',
+    redirect: 'follow',
+    headers:  { 'Content-Type': 'application/json' },
+    body:     JSON.stringify(payload)
+  });
+  if (!resp.ok) throw new Error('HTTP ' + resp.status);
+  var result = await resp.json();
+  if (!result.success) throw new Error(result.error || 'Submit gagal');
+  return true;
+}
+
 function buildMultipart(fn, mt, b64) {
   var bnd = 'qc_bnd';
   var meta = JSON.stringify({name:fn, parents:[CONFIG.driveId]});
@@ -2338,10 +2371,22 @@ async function submitData() {
     (document.getElementById('f_inspektor')||{}).value||''
   ];
   try {
-    var url='https://sheets.googleapis.com/v4/spreadsheets/'+CONFIG.sheetsId+'/values/Sheet1!A1:append?valueInputOption=USER_ENTERED&key='+CONFIG.apiKey;
-    var resp=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
-    if(resp.ok){closeModal();showToast('✅ Data QC berhasil dikirim!','success');localStorage.removeItem('qc_draft');}
-    else{var e=await resp.json();throw new Error(e.error&&e.error.message||'Gagal');}
+    // Try Apps Script first, fallback to Sheets API
+    var submitted = false;
+    if (CONFIG.appsScriptUrl) {
+      try {
+        await submitViaAppsScript('Sheet1', row);
+        submitted = true;
+      } catch(e2) { console.log('Apps Script submit failed, trying Sheets API:', e2.message); }
+    }
+    if (!submitted && CONFIG.sheetsId && CONFIG.apiKey) {
+      var url='https://sheets.googleapis.com/v4/spreadsheets/'+CONFIG.sheetsId+'/values/Sheet1!A1:append?valueInputOption=USER_ENTERED&key='+CONFIG.apiKey;
+      var resp=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
+      if(resp.ok){ submitted = true; }
+      else{var e=await resp.json();throw new Error(e.error&&e.error.message||'Gagal');}
+    }
+    if (!submitted) throw new Error('Tidak ada metode submit yang berhasil');
+    closeModal();showToast('✅ Data QC berhasil dikirim!','success');localStorage.removeItem('qc_draft');
   } catch(e){closeModal();showToast('❌ '+e.message,'error');}
   btn.textContent='✅ Kirim'; btn.disabled=false;
 }
@@ -2354,10 +2399,18 @@ async function submitInspeksi() {
   var driveUrls=insFotoData.filter(Boolean).map(function(d){return d.driveUrl||'';}).join(', ');
   var row=[new Date().toISOString(),'INSPEKSI'].concat(fields).concat([driveUrls]);
   try {
-    var url='https://sheets.googleapis.com/v4/spreadsheets/'+CONFIG.sheetsId+'/values/Inspeksi!A1:append?valueInputOption=USER_ENTERED&key='+CONFIG.apiKey;
-    var resp=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
-    if(resp.ok)showToast('✅ Inspeksi berhasil dikirim!','success');
-    else{var e=await resp.json();throw new Error(e.error&&e.error.message||'Gagal');}
+    var submitted2 = false;
+    if (CONFIG.appsScriptUrl) {
+      try { await submitViaAppsScript('Inspeksi', row); submitted2 = true; } catch(e2) {}
+    }
+    if (!submitted2 && CONFIG.sheetsId && CONFIG.apiKey) {
+      var url='https://sheets.googleapis.com/v4/spreadsheets/'+CONFIG.sheetsId+'/values/Inspeksi!A1:append?valueInputOption=USER_ENTERED&key='+CONFIG.apiKey;
+      var resp=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
+      if(resp.ok) submitted2=true;
+      else{var e=await resp.json();throw new Error(e.error&&e.error.message||'Gagal');}
+    }
+    if(submitted2) showToast('✅ Inspeksi berhasil dikirim!','success');
+    else throw new Error('Submit gagal');
   } catch(e){showToast('❌ '+e.message,'error');}
 }
 
