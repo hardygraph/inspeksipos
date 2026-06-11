@@ -2361,37 +2361,47 @@ function showSubmitModal() {
 }
 function closeModal(){ document.getElementById('submitModal').classList.remove('show'); }
 async function submitData() {
-  if(!CONFIG.configured){showToast('Konfigurasi API dahulu','error');return;}
+  if (!CONFIG.appsScriptUrl) { showToast('❌ Apps Script URL belum diset di Config','error'); return; }
   var btn=document.getElementById('btnConfirmSubmit'); btn.textContent='⏳...'; btn.disabled=true;
   var row = [new Date().toISOString(),'QC',
     (document.getElementById('f_tanggal')||{}).value||'',
     (document.getElementById('f_namaPOS')||{}).value||'',
     (document.getElementById('f_noRegister')||{}).value||'',
     (document.getElementById('f_jenisAlat')||{}).value||'',
-    (document.getElementById('f_inspektor')||{}).value||''
+    (document.getElementById('f_inspektor')||{}).value||'',
+    (document.getElementById('f_lat')||{}).value||'',
+    (document.getElementById('f_lon')||{}).value||'',
+    (document.getElementById('f_koordinatDMS')||{}).value||'',
+    (document.getElementById('f_cuaca')||{}).value||'',
+    (document.getElementById('f_das')||{}).value||'',
+    (document.getElementById('f_wilayahSungai')||{}).value||'',
+    (document.getElementById('f_kabupaten')||{}).value||'',
+    (document.getElementById('f_provinsi')||{}).value||'',
+    (document.getElementById('f_statusTanah')||{}).value||'',
+    (document.getElementById('f_kondisiBangunan')||{}).value||'',
+    (document.getElementById('f_tipeSensor')||{}).value||'',
+    (document.getElementById('f_didirikanOleh')||{}).value||'',
+    (document.getElementById('f_tahunOperasi')||{}).value||'',
+    (document.getElementById('f_instansiPengelola')||{}).value||'',
+    (document.getElementById('f_penjagaPos')||{}).value||'',
+    idPhotoData[0]&&idPhotoData[0].driveUrl||'',
+    idPhotoData[1]&&idPhotoData[1].driveUrl||'',
+    (document.getElementById('f_catatanUmum')||{}).value||''
   ];
   try {
-    // Try Apps Script first, fallback to Sheets API
-    var submitted = false;
-    if (CONFIG.appsScriptUrl) {
-      try {
-        await submitViaAppsScript('Sheet1', row);
-        submitted = true;
-      } catch(e2) { console.log('Apps Script submit failed, trying Sheets API:', e2.message); }
-    }
-    if (!submitted && CONFIG.sheetsId && CONFIG.apiKey) {
-      var url='https://sheets.googleapis.com/v4/spreadsheets/'+CONFIG.sheetsId+'/values/Sheet1!A1:append?valueInputOption=USER_ENTERED&key='+CONFIG.apiKey;
-      var resp=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
-      if(resp.ok){ submitted = true; }
-      else{var e=await resp.json();throw new Error(e.error&&e.error.message||'Gagal');}
-    }
-    if (!submitted) throw new Error('Tidak ada metode submit yang berhasil');
-    closeModal();showToast('✅ Data QC berhasil dikirim!','success');localStorage.removeItem('qc_draft');
-  } catch(e){closeModal();showToast('❌ '+e.message,'error');}
+    await submitViaAppsScript('QC', row);
+    closeModal();
+    showToast('✅ Data QC berhasil dikirim!','success');
+    localStorage.removeItem('qc_draft');
+  } catch(e) {
+    closeModal();
+    showToast('❌ '+e.message,'error');
+    console.log('Submit error:', e);
+  }
   btn.textContent='✅ Kirim'; btn.disabled=false;
 }
 async function submitInspeksi() {
-  if(!CONFIG.configured){showToast('Konfigurasi API dahulu','error');return;}
+  if (!CONFIG.appsScriptUrl) { showToast('❌ Apps Script URL belum diset di Config','error'); return; }
   var namaPOS=(document.getElementById('ins_namaPOS')||{}).value||'';
   if(!namaPOS){showToast('Isi Nama Pos dahulu','error');return;}
   var fields=[];
@@ -2399,19 +2409,9 @@ async function submitInspeksi() {
   var driveUrls=insFotoData.filter(Boolean).map(function(d){return d.driveUrl||'';}).join(', ');
   var row=[new Date().toISOString(),'INSPEKSI'].concat(fields).concat([driveUrls]);
   try {
-    var submitted2 = false;
-    if (CONFIG.appsScriptUrl) {
-      try { await submitViaAppsScript('Inspeksi', row); submitted2 = true; } catch(e2) {}
-    }
-    if (!submitted2 && CONFIG.sheetsId && CONFIG.apiKey) {
-      var url='https://sheets.googleapis.com/v4/spreadsheets/'+CONFIG.sheetsId+'/values/Inspeksi!A1:append?valueInputOption=USER_ENTERED&key='+CONFIG.apiKey;
-      var resp=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({values:[row]})});
-      if(resp.ok) submitted2=true;
-      else{var e=await resp.json();throw new Error(e.error&&e.error.message||'Gagal');}
-    }
-    if(submitted2) showToast('✅ Inspeksi berhasil dikirim!','success');
-    else throw new Error('Submit gagal');
-  } catch(e){showToast('❌ '+e.message,'error');}
+    await submitViaAppsScript('Inspeksi', row);
+    showToast('✅ Inspeksi berhasil dikirim!','success');
+  } catch(e){ showToast('❌ '+e.message,'error'); }
 }
 
 // ── TOAST ───────────────────────────────────────────────────
