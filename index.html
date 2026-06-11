@@ -1202,6 +1202,7 @@ async function submitViaAppsScript(sheetName, row) {
 
 async function uploadViaAppsScript(fileName, mimeType, base64Data) {
   if (!CONFIG.appsScriptUrl) throw new Error('Apps Script URL belum diset');
+  console.log('Upload foto:', fileName, '| folderId:', CONFIG.driveId || '(kosong - akan ke root Drive)');
   // Split base64 into chunks to avoid URL length limit
   var CHUNK = 50000; // ~50KB per chunk
   var totalChunks = Math.ceil(base64Data.length / CHUNK);
