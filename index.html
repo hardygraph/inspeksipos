@@ -859,6 +859,11 @@ function loadConfig() {
   }
   var d = document.getElementById('f_tanggal');
   if (d && !d.value) d.value = new Date().toISOString().split('T')[0];
+
+  // Auto-fetch database pos saat app dibuka — tidak perlu login
+  if (CONFIG.appsScriptUrl) {
+    setTimeout(fetchPosDatabase, 1000);
+  }
 }
 
 function saveConfig() {
@@ -2370,7 +2375,7 @@ function fetchViaScriptTag(url) {
 }
 
 async function fetchPosDatabase() {
-  if (!CONFIG.sheetsId) return;
+  if (!CONFIG.sheetsId && !CONFIG.appsScriptUrl) return;
   var icon = document.getElementById('posLoadIcon');
   var status = document.getElementById('posDbStatus');
   if (icon) icon.style.display = 'inline';
