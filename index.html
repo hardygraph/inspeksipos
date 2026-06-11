@@ -1189,41 +1189,71 @@ async function uploadIdPhotoToDrive(idx) {
 }
 
 // ── MULTIPART BODY ──────────────────────────────────────────
-// ── UPLOAD VIA APPS SCRIPT (doPost) ──────────────────────────
-async function uploadViaAppsScript(fileName, mimeType, base64Data) {
-  if (!CONFIG.appsScriptUrl) throw new Error('Apps Script URL belum diset');
-  var payload = {
-    action:   'uploadFoto',
-    folderId: CONFIG.driveId || '',
-    fileName: fileName,
-    mimeType: mimeType,
-    base64:   base64Data
-  };
-  var resp = await fetch(CONFIG.appsScriptUrl, {
-    method:   'POST',
-    redirect: 'follow',
-    headers:  { 'Content-Type': 'application/json' },
-    body:     JSON.stringify(payload)
-  });
-  if (!resp.ok) throw new Error('HTTP ' + resp.status);
-  var result = await resp.json();
-  if (!result.success) throw new Error(result.error || 'Upload gagal');
-  return result.url;
-}
+// ── UPLOAD & SUBMIT VIA APPS SCRIPT — defined above ──────────────────────────
 
 async function submitViaAppsScript(sheetName, row) {
   if (!CONFIG.appsScriptUrl) throw new Error('Apps Script URL belum diset');
-  var payload = { action: 'appendRow', sheet: sheetName, row: row };
-  var resp = await fetch(CONFIG.appsScriptUrl, {
-    method:   'POST',
-    redirect: 'follow',
-    headers:  { 'Content-Type': 'application/json' },
-    body:     JSON.stringify(payload)
+  // Encode row as base64 to avoid URL length/encoding issues
+  var payload = JSON.stringify({ action: 'appendRow', sheet: sheetName, row: row });
+  var encoded = btoa(unescape(encodeURIComponent(payload)));
+  // Use JSONP (script tag) to bypass CORS — same as fetchViaScriptTag
+  return new Promise(function(resolve, reject) {
+    var cbName = '_submitCb' + Date.now();
+    var script = document.createElement('script');
+    var timer = setTimeout(function() {
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+      reject(new Error('Timeout — Apps Script tidak merespons'));
+    }, 15000);
+    window[cbName] = function(result) {
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+      clearTimeout(timer);
+      if (result && result.success) resolve(true);
+      else reject(new Error(result && result.error ? result.error : 'Submit gagal'));
+    };
+    var sep = CONFIG.appsScriptUrl.indexOf('?') >= 0 ? '&' : '?';
+    script.src = CONFIG.appsScriptUrl + sep + 'data=' + encodeURIComponent(encoded) + '&callback=' + cbName;
+    script.onerror = function() {
+      delete window[cbName]; clearTimeout(timer);
+      if (script.parentNode) script.parentNode.removeChild(script);
+      reject(new Error('Script load error'));
+    };
+    document.head.appendChild(script);
   });
-  if (!resp.ok) throw new Error('HTTP ' + resp.status);
-  var result = await resp.json();
-  if (!result.success) throw new Error(result.error || 'Submit gagal');
-  return true;
+}
+
+async function uploadViaAppsScript(fileName, mimeType, base64Data) {
+  if (!CONFIG.appsScriptUrl) throw new Error('Apps Script URL belum diset');
+  var payload = JSON.stringify({
+    action: 'uploadFoto', folderId: CONFIG.driveId || '',
+    fileName: fileName, mimeType: mimeType, base64: base64Data
+  });
+  var encoded = btoa(unescape(encodeURIComponent(payload)));
+  return new Promise(function(resolve, reject) {
+    var cbName = '_uploadCb' + Date.now();
+    var script = document.createElement('script');
+    var timer = setTimeout(function() {
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+      reject(new Error('Upload timeout'));
+    }, 30000);
+    window[cbName] = function(result) {
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+      clearTimeout(timer);
+      if (result && result.success) resolve(result.url);
+      else reject(new Error(result && result.error ? result.error : 'Upload gagal'));
+    };
+    var sep = CONFIG.appsScriptUrl.indexOf('?') >= 0 ? '&' : '?';
+    script.src = CONFIG.appsScriptUrl + sep + 'data=' + encodeURIComponent(encoded) + '&callback=' + cbName;
+    script.onerror = function() {
+      delete window[cbName]; clearTimeout(timer);
+      if (script.parentNode) script.parentNode.removeChild(script);
+      reject(new Error('Upload script error'));
+    };
+    document.head.appendChild(script);
+  });
 }
 
 function buildMultipart(fn, mt, b64) {
