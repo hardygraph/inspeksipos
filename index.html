@@ -949,15 +949,37 @@ async function submitPassword() {
 
   try {
     // Fetch password from Google Sheets via Apps Script JSONP
-    var rows = await fetchViaScriptTag(appsUrl + (appsUrl.indexOf('?')>=0?'&':'?') + 'sheet=Config');
+    var fetchUrl = appsUrl + (appsUrl.indexOf('?')>=0?'&':'?') + 'sheet=Config';
+    document.getElementById('pwStatus').textContent = '🔄 Menghubungi: ' + fetchUrl.substring(0,60) + '...';
+    var rows = await fetchViaScriptTag(fetchUrl);
     // rows = [['admin_password', 'nilai_password'], ...]
+    document.getElementById('pwStatus').textContent = '📦 Data diterima: ' + (rows ? rows.length : 0) + ' baris';
     var serverPw = null;
     if (rows && rows.length) {
       rows.forEach(function(r) {
+        console.log('Config row:', r);
         if (r[0] && r[0].toString().toLowerCase().trim() === 'admin_password') {
           serverPw = r[1] ? r[1].toString().trim() : null;
         }
       });
+    }
+
+    if (!serverPw) {
+      // Fallback: mungkin Apps Script belum support ?sheet=Config
+      // Coba fetch default (DataPos) dan cari baris admin_password di sana juga
+      if (rows && rows.length === 0) {
+        document.getElementById('pwStatus').textContent = '🔄 Mencoba metode alternatif...';
+        try {
+          var rows2 = await fetchViaScriptTag(appsUrl);
+          if (rows2 && rows2.length) {
+            rows2.forEach(function(r) {
+              if (r[0] && r[0].toString().toLowerCase().trim() === 'admin_password') {
+                serverPw = r[1] ? r[1].toString().trim() : null;
+              }
+            });
+          }
+        } catch(e2) { console.log('Fallback failed:', e2); }
+      }
     }
 
     if (!serverPw) {
